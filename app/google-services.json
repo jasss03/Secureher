@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "17494956421",
+    "project_id": "her-10b28",
+    "storage_bucket": "her-10b28.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:17494956421:android:221576db965e6999e90cec",
+        "android_client_info": {
+          "package_name": "com.example.shesecure"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "17494956421-la8kd6su7kfmf14k880gjst90rv147i3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.shesecure",
+            "certificate_hash": "daf283fd69220a6e18b0b845e5d838e8c3db715e"
+          }
+        },
+        {
+          "client_id": "17494956421-7sctk3421jchkn5h8n4ups30kgnfn39a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZox0rkF-H9qKeyPLTk1QA1y2VmiJhHRg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "17494956421-7sctk3421jchkn5h8n4ups30kgnfn39a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

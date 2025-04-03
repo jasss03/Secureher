@@ -1,0 +1,9 @@
+buildscript {
+    dependencies {
+        classpath 'com.google.gms:google-services:4.3.14'
+        classpath 'com.android.tools.build:gradle:7.0.2'
+    }
+}
+plugins {
+    id 'com.android.application' version '8.0.2' apply false
+}

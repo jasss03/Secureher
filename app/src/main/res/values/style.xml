@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ThemeOverlay.App.BottomNavigationView" parent="">
+        <item name="colorSurface">#d1e4ff</item>
+        <item name="colorSecondaryContainer">@color/light_purple</item>
+    </style>
+    <style name="ButtonStyle" parent="Widget.AppCompat.Button">
+        <item name="android:background">@color/light_black</item>
+        <item name="cornerRadius">100dp</item>
+    </style>
+
+</resources>
