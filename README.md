@@ -1,6 +1,3 @@
-Sure! Here's a reworded version of the same features, tailored for a **DisasterResQ** app aimed at responding to **natural disasters** like earthquakes, floods, and storms:
-
----
 
 # DisasterResQ  
 **"DisasterResQ"** is a mobile application developed using Android Studio and Java, designed to aid individuals during natural disasters by providing real-time alerts, emergency contact features, and intelligent distress detection.
@@ -39,4 +36,4 @@ Tweak this value to fine-tune the app’s sensitivity in detecting sudden or dis
 
 **DisasterResQ** is a step toward building safer, more responsive communities during times of crisis. Thank you for supporting safety through technology!
 
-Let me know if you'd like a version formatted as a README or for app store listing.
+
