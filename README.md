@@ -1,46 +1,42 @@
+Sure! Here's a reworded version of the same features, tailored for a **DisasterResQ** app aimed at responding to **natural disasters** like earthquakes, floods, and storms:
 
-# SheSecure
-"She Secure" is a women's safety mobile application developed using Android Studio and Java. 
-The app offers a range of unique features aimed at enhancing the safety of women.
+---
 
-## Key-Features
+# DisasterResQ  
+**"DisasterResQ"** is a mobile application developed using Android Studio and Java, designed to aid individuals during natural disasters by providing real-time alerts, emergency contact features, and intelligent distress detection.
 
-`Saved Contacts :` The app offers a dedicated section where users can add and manage phone numbers from their contacts as 
-"Saved Contacts." These contacts are essential for the safety check-ins and emergency alert functionalities.
+## Key Features
 
-`Accelerometer :` The application utilizes an accelerometer to determine if the user is running or in a 
-state of distress. If the app detects unusual activity, such as a sudden increase in movement, it 
-automatically sends the user's location to their saved contacts. This feature ensures that help can 
-be promptly dispatched if the user is unable to call for assistance.
+`Trusted Contacts:` Users can add and manage a list of emergency contacts who will be notified during disaster events. These contacts receive real-time updates and alerts regarding the user's safety and location.
 
-`Safety-Tips :` The app offers valuable safety tips to educate users on various precautionary measures and best 
-practices. This information serves as a resource to enhance personal safety and increase 
-awareness of potential risks.
+`Motion Detection (Accelerometer):` The app uses the phone's accelerometer to detect abnormal movements such as sudden shaking (earthquakes) or falls. When such motion is detected, the app automatically sends the user's live location to their trusted contacts, enabling a quicker response.
 
- `Panic Button :` It also incorporates video and audio recording capabilities, allowing users to capture 
-evidence in case of emergencies. These recordings can be quickly shared with saved contacts, 
-aiding in documenting incidents and seeking assistance.
+`Disaster Safety Tips:` The app offers essential disaster preparedness and response tips—covering events such as floods, earthquakes, cyclones, and more. These tips help users stay informed and ready before, during, and after a disaster.
 
-`Alert Button :` The "She Secure" app includes an "Alert" button prominently displayed on the main interface. When the user presses
-this button, the app instantly sends their current location's address to their saved contacts.
+`SOS Button:` Users can instantly activate an SOS feature that begins video and audio recording to document their surroundings. These recordings are automatically sent to trusted contacts to help them understand the situation and act accordingly.
 
+`Emergency Alert Button:` A prominently placed button on the home screen allows users to quickly send their current location and a distress message to all their emergency contacts at the press of a button—ideal in moments when time is critical.
 
+---
 
-#### Testing on a Mobile Device:
+### Testing on a Mobile Device:
 
-If you plan to test the app on your mobile device, you might need to adjust the accelerometer threshold for speed detection. Follow these steps:
+To effectively test motion detection on your mobile device, you might need to adjust the accelerometer sensitivity. Here's how:
 
-Locate the `SpeedDetectionService.java` file in the `services` directory.
+Navigate to the `SpeedDetectionService.java` file located in the `services` directory.
 
-Inside the `SpeedDetectionService` class, find the variable:
+Find and modify the variable:
 
-```
+```java
 private float thresholdSpeed = 0.1f;
 ```
-Adjust the value of `thresholdSpeed` to suit your needs. This threshold determines how sensitive the app is to detect unusual activities, such as 
-running or distress.
 
-`Note:` It is essential to set up the Google Maps API key and, if necessary, adjust the accelerometer threshold to ensure proper functionality of the 
-"She Secure" application on your device.
+Tweak this value to fine-tune the app’s sensitivity in detecting sudden or disaster-related movements.
 
-I hope you find "She Secure" valuable in promoting women's safety and personal empowerment. Thank you for your interest and support!
+`Note:` Be sure to configure the **Google Maps API key** and properly calibrate the accelerometer threshold for the best experience with DisasterResQ.
+
+---
+
+**DisasterResQ** is a step toward building safer, more responsive communities during times of crisis. Thank you for supporting safety through technology!
+
+Let me know if you'd like a version formatted as a README or for app store listing.
