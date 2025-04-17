@@ -1,39 +1,49 @@
 
-# DisasterResQ  
-**"DisasterResQ"** is a mobile application developed using Android Studio and Java, designed to aid individuals during natural disasters by providing real-time alerts, emergency contact features, and intelligent distress detection.
 
-## Key Features
-
-`Trusted Contacts:` Users can add and manage a list of emergency contacts who will be notified during disaster events. These contacts receive real-time updates and alerts regarding the user's safety and location.
-
-`Motion Detection (Accelerometer):` The app uses the phone's accelerometer to detect abnormal movements such as sudden shaking (earthquakes) or falls. When such motion is detected, the app automatically sends the user's live location to their trusted contacts, enabling a quicker response.
-
-`Disaster Safety Tips:` The app offers essential disaster preparedness and response tips—covering events such as floods, earthquakes, cyclones, and more. These tips help users stay informed and ready before, during, and after a disaster.
-
-`SOS Button:` Users can instantly activate an SOS feature that begins video and audio recording to document their surroundings. These recordings are automatically sent to trusted contacts to help them understand the situation and act accordingly.
-
-`Emergency Alert Button:` A prominently placed button on the home screen allows users to quickly send their current location and a distress message to all their emergency contacts at the press of a button—ideal in moments when time is critical.
+### 🔐 **Secure Her** – Empowering Safety, Anytime, Anywhere  
+**Secure Her** is a dedicated safety app for women, built with **Android Studio** and **Java**, designed to protect and support during emergencies, natural disasters, or unsafe situations. With real-time alerts, smart motion detection, and instant SOS features, **Secure Her** is your trusted companion when you need it most.
 
 ---
 
-### Testing on a Mobile Device:
+### 🌟 **Key Features**
 
-To effectively test motion detection on your mobile device, you might need to adjust the accelerometer sensitivity. Here's how:
+**👩‍❤️‍👩 Trusted Contacts**  
+Add your circle of safety. With **Secure Her**, you can choose trusted contacts—family, friends, or guardians—who'll receive **instant alerts** and **live location updates** whenever you’re in danger.
 
-Navigate to the `SpeedDetectionService.java` file located in the `services` directory.
+**📳 Smart Motion Detection**  
+Using your phone’s **accelerometer**, the app detects unusual movements—like **sudden falls**, **shaking**, or impact. If detected, it automatically sends your **real-time location** to your trusted contacts, ensuring they know you need help—**even if you can’t press a button**.
 
-Find and modify the variable:
+**💡 Safety Tips & Guides**  
+From **disaster preparedness** to **personal safety strategies**, **Secure Her** provides essential tips that help you stay informed and ready—whether you're walking alone, traveling, or facing a crisis.
 
-```java
-private float thresholdSpeed = 0.1f;
-```
+**🆘 One-Tap SOS Mode**  
+Activate the **SOS button** to instantly begin **video and audio recording** of your surroundings. The recordings, along with your **live location**, are automatically sent to your emergency contacts—capturing crucial evidence and signaling for help.
 
-Tweak this value to fine-tune the app’s sensitivity in detecting sudden or disaster-related movements.
-
-`Note:` Be sure to configure the **Google Maps API key** and properly calibrate the accelerometer threshold for the best experience with DisasterResQ.
+**🚨 Emergency Alert Shortcut**  
+A highly accessible **alert button** on the home screen lets you send an **emergency message and location** to all your trusted contacts with just one tap—ideal when you feel threatened or are in a risky situation.
 
 ---
 
-**DisasterResQ** is a step toward building safer, more responsive communities during times of crisis. Thank you for supporting safety through technology!
+### 🔧 **Adjusting Motion Detection Sensitivity**
 
+Want to fine-tune how sensitive the motion detection is?
+
+1. Open `SpeedDetectionService.java` (in the `services` folder).
+2. Edit the threshold line:
+   ```java
+   private float thresholdSpeed = 0.1f;
+   ```
+   Raise or lower the value to control how responsive the app is to movement.
+
+---
+
+### ⚙️ **Important Setup Tips**
+
+- Make sure your **Google Maps API key** is configured for accurate location sharing.
+- Calibrate the phone’s **accelerometer threshold** during setup for the most accurate motion detection.
+
+---
+
+### ❤️ **Secure Her isn’t just an app—it’s peace of mind.**  
+For every woman who walks alone, travels late, or faces unsafe environments—**Secure Her** is built to protect, alert, and empower.
 
