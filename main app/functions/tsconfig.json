@@ -5,7 +5,9 @@
     "noImplicitReturns": true,
     "outDir": "lib",
     "sourceMap": true,
-    "target": "es2020"
+    "target": "es2020",
+    "esModuleInterop": true,
+    "moduleResolution": "node"
   },
   "compileOnSave": true,
   "include": ["src"]
