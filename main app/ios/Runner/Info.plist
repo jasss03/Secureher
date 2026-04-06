@@ -58,9 +58,23 @@
 		<string>location</string>
 		<string>audio</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.346182049858-0s4qte377d40o4ga16f27m4jel3vrnrq</string>
+				<string>app-1-346182049858-ios-061220caaf35f882380ddb</string>
+			</array>
+		</dict>
+	</array>
 	<key>GMSApiKey</key>
-	<string>YOUR_GOOGLE_MAPS_API_KEY_HERE</string>
+	<string>AIzaSyAH4ioId-gjIZXkDU3aNmaDjeDclwXY9p8</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Motion data is used to detect falls and unusual movements for your safety.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>SecureHer needs access to your contacts so you can quickly add trusted people to notify in an emergency.</string>
 </dict>
 </plist>
