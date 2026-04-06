@@ -1,0 +1,129 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isMainUser(mainUserId) {
+      return isAuthenticated() && request.auth.uid == mainUserId;
+    }
+
+    function hasActiveLink(mainUserId) {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/companionLinks/$(mainUserId + "_" + request.auth.uid))
+        && get(/databases/$(database)/documents/companionLinks/$(mainUserId + "_" + request.auth.uid)).data.active == true;
+    }
+
+    function isLinkedPair(otherUserId) {
+      return isAuthenticated() && (
+        (
+          exists(/databases/$(database)/documents/companionLinks/$(request.auth.uid + "_" + otherUserId)) &&
+          get(/databases/$(database)/documents/companionLinks/$(request.auth.uid + "_" + otherUserId)).data.active == true
+        ) ||
+        (
+          exists(/databases/$(database)/documents/companionLinks/$(otherUserId + "_" + request.auth.uid)) &&
+          get(/databases/$(database)/documents/companionLinks/$(otherUserId + "_" + request.auth.uid)).data.active == true
+        )
+      );
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isLinkedPair(userId));
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /companionLinkCodes/{code} {
+      allow read, write: if false;
+    }
+
+    // Link codes: any authenticated user can create and read; only the creator can delete
+    match /link_codes/{code} {
+      allow create: if isAuthenticated() && request.resource.data.mainUserId == request.auth.uid;
+      allow read: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // App connections written by companion app
+    match /app_connections/{connectionId} {
+      allow create: if isAuthenticated();
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.companionUserId ||
+        request.auth.uid == resource.data.mainAppUserId
+      );
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.companionUserId ||
+        request.auth.uid == resource.data.mainAppUserId
+      );
+    }
+
+    match /companionLinks/{linkId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.mainUserId ||
+        request.auth.uid == resource.data.companionUserId
+      );
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.companionUserId;
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.mainUserId || 
+        request.auth.uid == resource.data.companionUserId
+      );
+      allow delete: if false;
+    }
+
+    match /deviceState/{mainUserId} {
+      allow read: if isMainUser(mainUserId) || hasActiveLink(mainUserId);
+      allow write: if isMainUser(mainUserId);
+    }
+
+    match /deviceLocations/{mainUserId}/points/{pointId} {
+      allow read: if isMainUser(mainUserId) || hasActiveLink(mainUserId);
+      allow write: if isMainUser(mainUserId);
+    }
+
+    match /remoteCommands/{commandId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.mainUserId ||
+        request.auth.uid == resource.data.issuedByCompanionId
+      );
+      allow create: if isAuthenticated() && 
+        hasActiveLink(request.resource.data.mainUserId) &&
+        request.resource.data.issuedByCompanionId == request.auth.uid;
+      allow update: if isAuthenticated() && request.auth.uid == resource.data.mainUserId;
+      allow delete: if false;
+    }
+
+    match /trustedContacts/{mainUserId}/items/{contactId} {
+      allow read, write: if isMainUser(mainUserId) || hasActiveLink(mainUserId);
+    }
+
+    match /safeZones/{mainUserId}/items/{zoneId} {
+      allow read, write: if isMainUser(mainUserId) || hasActiveLink(mainUserId);
+    }
+
+    match /checkIns/{mainUserId}/items/{checkInId} {
+      allow read, write: if isMainUser(mainUserId) || hasActiveLink(mainUserId);
+    }
+
+    match /activityLogs/{mainUserId}/events/{eventId} {
+      allow read: if isMainUser(mainUserId) || hasActiveLink(mainUserId);
+      allow write: if false;
+    }
+
+    match /alerts/{alertId} {
+      // Public read so the web tracking page works without login
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.mainUserId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.mainUserId == request.auth.uid;
+
+      // GPS pings written during active trip
+      match /locations/{locId} {
+        allow read: if true;
+        allow create: if isAuthenticated();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

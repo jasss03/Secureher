@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow an authenticated user to upload recordings
+    match /recordings/{allPaths=**} {
+      allow write: if request.auth != null;
+      allow read: if request.auth != null;
+    }
+    
+    // Allow uploading evidence securely
+    match /evidence/{allPaths=**} {
+        allow write: if request.auth != null;
+        allow read: if request.auth != null;
+    }
+  }
+}
