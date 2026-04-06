@@ -31,32 +31,34 @@ class _SosDashboardState extends State<SosDashboard> {
     });
 
     try {
-      // Load SOS alerts
-      final alertsSnapshot = await _firestore.collection('alerts')
-          .where('type', isEqualTo: 'sos')
+      // Load SOS and Trip alerts
+      final alertsSnapshot = await _firestore
+          .collection('alerts')
+          .where('type', whereIn: ['sos', 'trip', 'missed_checkin'])
           .orderBy('createdAt', descending: true)
-          .limit(10)
+          .limit(20)
           .get();
-      
+
       final alerts = alertsSnapshot.docs.map((doc) {
-        final data = doc.data();
         return {
           'id': doc.id,
-          'message': data['message'] ?? 'SOS Alert',
+          'type': data['type'] ?? 'sos',
+          'message': data['message'] ?? 'Alert',
           'timestamp': data['createdAt'] ?? Timestamp.now(),
-          'location': data['position'] != null 
-              ? LatLng(data['position']['lat'], data['position']['lng']) 
+          'location': data['currentLocation'] != null
+              ? LatLng(data['currentLocation']['lat'], data['currentLocation']['lng'])
               : null,
           'active': data['active'] ?? false,
         };
       }).toList();
 
       // Load check-ins
-      final checkInsSnapshot = await _firestore.collection('check_ins')
+      final checkInsSnapshot = await _firestore
+          .collection('check_ins')
           .orderBy('timestamp', descending: true)
           .limit(10)
           .get();
-      
+
       final checkIns = checkInsSnapshot.docs.map((doc) {
         final data = doc.data();
         return {
@@ -81,31 +83,30 @@ class _SosDashboardState extends State<SosDashboard> {
   }
 
   void _setupListeners() {
-    // Listen for new SOS alerts
-    _firestore.collection('alerts')
-        .where('type', isEqualTo: 'sos')
+    // Listen for new alerts (SOS + Trips)
+    _firestore
+        .collection('alerts')
+        .where('type', whereIn: ['sos', 'trip', 'missed_checkin'])
         .snapshots()
         .listen((snapshot) {
-      for (var change in snapshot.docChanges) {
-        if (change.type == DocumentChangeType.added) {
-          final data = change.doc.data()!;
-          
-          // Show notification for new SOS alert
-          NotificationService.showSosNotification(
-            title: 'SOS Alert!',
-            body: data['message'] ?? 'Someone needs your help!',
-            payload: 'sos',
-          );
-          
-          _loadData(); // Refresh data
-        }
-      }
-    });
+          for (var change in snapshot.docChanges) {
+            if (change.type == DocumentChangeType.added) {
+              final data = change.doc.data()!;
+
+              // Show notification for new SOS alert
+              NotificationService.showSosNotification(
+                title: 'SOS Alert!',
+                body: data['message'] ?? 'Someone needs your help!',
+                payload: 'sos',
+              );
+
+              _loadData(); // Refresh data
+            }
+          }
+        });
 
     // Listen for new check-ins
-    _firestore.collection('check_ins')
-        .snapshots()
-        .listen((snapshot) {
+    _firestore.collection('check_ins').snapshots().listen((snapshot) {
       for (var change in snapshot.docChanges) {
         if (change.type == DocumentChangeType.added) {
           _loadData(); // Refresh data
@@ -164,9 +165,9 @@ class _SosDashboardState extends State<SosDashboard> {
           children: [
             Text(
               'Companion Dashboard',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -184,19 +185,17 @@ class _SosDashboardState extends State<SosDashboard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'SOS Alerts',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          'Active Alerts & Trips',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         _sosAlerts.isEmpty
             ? const Card(
                 child: Padding(
                   padding: EdgeInsets.all(16),
-                  child: Center(
-                    child: Text('No SOS alerts found'),
-                  ),
+                  child: Center(child: Text('No SOS alerts found')),
                 ),
               )
             : ListView.builder(
@@ -205,16 +204,26 @@ class _SosDashboardState extends State<SosDashboard> {
                 itemCount: _sosAlerts.length,
                 itemBuilder: (context, index) {
                   final alert = _sosAlerts[index];
+                  final isTrip = alert['type'] == 'trip';
+                  final isSos = alert['type'] == 'sos';
+                  final statusColor = isSos ? Colors.red : (isTrip ? Colors.blue : Colors.orange);
+                  final label = isSos ? 'EMERGENCY SOS' : (isTrip ? 'ACTIVE TRIP' : 'ALERT');
+
                   final timestamp = alert['timestamp'] as Timestamp;
                   final date = timestamp.toDate();
-                  final formattedDate = DateFormat('MMM d, yyyy - h:mm a').format(date);
-                  
+                  final formattedDate = DateFormat(
+                    'MMM d, yyyy - h:mm a',
+                  ).format(date);
+
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      side: alert['active'] 
-                          ? BorderSide(color: Theme.of(context).colorScheme.error, width: 2)
+                      side: alert['active']
+                          ? BorderSide(
+                              color: statusColor,
+                              width: 2,
+                            )
                           : BorderSide.none,
                     ),
                     child: ListTile(
@@ -222,18 +231,18 @@ class _SosDashboardState extends State<SosDashboard> {
                       title: Row(
                         children: [
                           Icon(
-                            Icons.warning_rounded,
-                            color: alert['active'] 
-                                ? Theme.of(context).colorScheme.error
+                            isSos ? Icons.warning_rounded : (isTrip ? Icons.directions_walk : Icons.info),
+                            color: alert['active']
+                                ? statusColor
                                 : Colors.grey,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            alert['active'] ? 'ACTIVE SOS' : 'SOS Alert',
+                            alert['active'] ? 'ACTIVE $label' : label,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: alert['active'] 
-                                  ? Theme.of(context).colorScheme.error
+                              color: alert['active']
+                                  ? statusColor
                                   : null,
                             ),
                           ),
@@ -275,18 +284,16 @@ class _SosDashboardState extends State<SosDashboard> {
       children: [
         Text(
           'Check-ins',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         _checkIns.isEmpty
             ? const Card(
                 child: Padding(
                   padding: EdgeInsets.all(16),
-                  child: Center(
-                    child: Text('No check-ins found'),
-                  ),
+                  child: Center(child: Text('No check-ins found')),
                 ),
               )
             : ListView.builder(
@@ -297,20 +304,23 @@ class _SosDashboardState extends State<SosDashboard> {
                   final checkIn = _checkIns[index];
                   final timestamp = checkIn['timestamp'] as Timestamp;
                   final date = timestamp.toDate();
-                  final formattedDate = DateFormat('MMM d, yyyy - h:mm a').format(date);
-                  
+                  final formattedDate = DateFormat(
+                    'MMM d, yyyy - h:mm a',
+                  ).format(date);
+
                   Timestamp? nextCheckInTimestamp = checkIn['nextCheckIn'];
                   String nextCheckInText = 'No scheduled check-in';
-                  
+
                   if (nextCheckInTimestamp != null) {
                     final nextDate = nextCheckInTimestamp.toDate();
                     if (nextDate.isAfter(DateTime.now())) {
-                      nextCheckInText = 'Next: ${DateFormat('h:mm a').format(nextDate)}';
+                      nextCheckInText =
+                          'Next: ${DateFormat('h:mm a').format(nextDate)}';
                     } else {
                       nextCheckInText = 'Missed check-in';
                     }
                   }
-                  
+
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     shape: RoundedRectangleBorder(
@@ -327,9 +337,7 @@ class _SosDashboardState extends State<SosDashboard> {
                           const SizedBox(width: 8),
                           const Text(
                             'Check-in',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),

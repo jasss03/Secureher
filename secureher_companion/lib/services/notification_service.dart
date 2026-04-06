@@ -1,53 +1,85 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
-  static tz.Location local = tz.getLocation('America/New_York');
+  static tz.Location? local;
 
   static Future<void> initialize() async {
-    // Initialize timezone
-    tz_data.initializeTimeZones();
-    
-    // Request permission for notifications
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    if (kIsWeb) return;
+    try {
+      // Initialize timezone
+      tz_data.initializeTimeZones();
+      local = tz.local;
 
-    // Initialize local notifications
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings();
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
+      // Request permission for notifications
+      await _messaging.requestPermission(alert: true, badge: true, sound: true);
 
-    await _notificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // Handle notification tap
-        print('Notification tapped: ${response.payload}');
-      },
-    );
+      // Initialize local notifications
+      const AndroidInitializationSettings initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const DarwinInitializationSettings initializationSettingsIOS =
+          DarwinInitializationSettings();
+      const InitializationSettings initializationSettings =
+          InitializationSettings(
+            android: initializationSettingsAndroid,
+            iOS: initializationSettingsIOS,
+          );
 
-    // Listen for FCM messages when app is in foreground
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      _showNotification(message);
-    });
+      await _notificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse response) {
+          debugPrint('Notification tapped: ${response.payload}');
+        },
+      );
 
-    // Get FCM token for the main app to use
-    // This would typically be associated with a user account
-    _saveFcmToken(await _messaging.getToken());
+      // Listen for FCM messages when app is in foreground
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        _showNotification(message);
+      });
+
+      _messaging.onTokenRefresh.listen(_saveFcmToken);
+      await _saveFcmToken(await getAvailableFcmToken());
+    } on FirebaseException catch (error) {
+      debugPrint('Notification setup skipped: ${error.code}');
+    } catch (error) {
+      debugPrint('Notification setup skipped: $error');
+    }
+  }
+
+  static Future<String?> getAvailableFcmToken() async {
+    if (kIsWeb) {
+      return _messaging.getToken();
+    }
+
+    try {
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        final apnsToken = await _messaging.getAPNSToken();
+        if (apnsToken == null) {
+          debugPrint('FCM token deferred until APNS token is available.');
+          return null;
+        }
+      }
+
+      return await _messaging.getToken();
+    } on FirebaseException catch (error) {
+      if (error.code == 'apns-token-not-set') {
+        debugPrint('FCM token deferred until APNS token is available.');
+        return null;
+      }
+      rethrow;
+    }
   }
 
   static Future<void> _saveFcmToken(String? token) async {
     if (token == null) return;
-    
+
     // TODO: Save token to Firestore with user ID
     // This would be implemented when user authentication is added
   }
@@ -85,6 +117,7 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
+    if (kIsWeb) return;
     await _notificationsPlugin.show(
       0,
       title,
@@ -109,13 +142,14 @@ class NotificationService {
       payload: payload,
     );
   }
-  
+
   // Add the missing methods that are used in check_in_service.dart
   static Future<void> showNotification({
     required String title,
     required String body,
     String? payload,
   }) async {
+    if (kIsWeb) return;
     await _notificationsPlugin.show(
       DateTime.now().millisecond,
       title,
@@ -137,7 +171,7 @@ class NotificationService {
       payload: payload,
     );
   }
-  
+
   static Future<void> scheduleNotification({
     required int id,
     required String title,
@@ -145,11 +179,12 @@ class NotificationService {
     required DateTime scheduledDate,
     String? payload,
   }) async {
+    if (kIsWeb || local == null) return;
     await _notificationsPlugin.zonedSchedule(
       id,
       title,
       body,
-      tz.TZDateTime.from(scheduledDate, local),
+      tz.TZDateTime.from(scheduledDate, local!),
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'scheduled_channel',

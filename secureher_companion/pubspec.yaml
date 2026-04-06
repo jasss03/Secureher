@@ -19,8 +19,10 @@ dependencies:
   firebase_core: ^4.1.1
   firebase_auth: ^6.1.0
   cloud_firestore: ^6.0.2
+  cloud_functions: ^6.0.2
   firebase_messaging: ^16.0.3
   flutter_local_notifications: ^19.4.2
+  timezone: ^0.10.1
   geolocator: ^14.0.2
   google_maps_flutter: ^2.9.0
   connectivity_plus: ^5.0.2

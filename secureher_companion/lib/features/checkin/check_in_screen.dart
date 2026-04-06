@@ -22,9 +22,9 @@ class _CheckInScreenState extends State<CheckInScreen> {
 
   Future<void> _scheduleCheckIn() async {
     if (_messageController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a message')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter a message')));
       return;
     }
 
@@ -90,10 +90,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Schedule Check-in'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Schedule Check-in'), centerTitle: true),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -104,8 +101,8 @@ class _CheckInScreenState extends State<CheckInScreen> {
                   Text(
                     'Schedule a Check-in',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
@@ -117,13 +114,17 @@ class _CheckInScreenState extends State<CheckInScreen> {
                   ListTile(
                     title: const Text('Check-in Time'),
                     subtitle: Text(
-                      DateFormat('MMM d, yyyy - h:mm a').format(_selectedDateTime),
+                      DateFormat(
+                        'MMM d, yyyy - h:mm a',
+                      ).format(_selectedDateTime),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Theme.of(context).colorScheme.outline),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                     ),
                     onTap: _selectDateTime,
                   ),

@@ -62,7 +62,7 @@ class _AppLinkingScreenState extends State<AppLinkingScreen> {
 
     try {
       await ConnectivityService.linkWithMainApp(linkCode);
-      
+
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const SosDashboard()),
@@ -105,8 +105,8 @@ class _AppLinkingScreenState extends State<AppLinkingScreen> {
                   Text(
                     'Link with SecureHer App',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
