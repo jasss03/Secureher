@@ -28,7 +28,9 @@ class SecureHerApp extends StatelessWidget {
             title: '🔐 Secure Her',
             theme: theme,
             builder: (context, child) => MediaQuery(
-              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(textScale)),
               child: NetworkStatusWidget(
                 child: child ?? const SizedBox.shrink(),
               ),
@@ -48,7 +50,8 @@ class SecureHerApp extends StatelessWidget {
               if (settings.name == '/otp') {
                 final phone = settings.arguments as String?;
                 return MaterialPageRoute(
-                  builder: (_) => OtpVerificationScreen(phoneNumber: phone ?? ''),
+                  builder: (_) =>
+                      OtpVerificationScreen(phoneNumber: phone ?? ''),
                 );
               }
               return null;

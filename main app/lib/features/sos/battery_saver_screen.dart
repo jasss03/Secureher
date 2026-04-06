@@ -39,14 +39,18 @@ class _BatterySaverScreenState extends State<BatterySaverScreen> {
             const SizedBox(height: 12),
             SwitchListTile(
               title: const Text('Enable Battery Saver Mode'),
-              subtitle: const Text('Runs only tracking + SOS with minimal UI to reduce battery consumption.'),
+              subtitle: const Text(
+                'Runs only tracking + SOS with minimal UI to reduce battery consumption.',
+              ),
               value: _enabled,
               onChanged: _toggle,
             ),
             const SizedBox(height: 16),
             const Text('When enabled:'),
             const SizedBox(height: 8),
-            const Text('• Reduces sensor usage (shake/impact).\n• Keeps location updates and SOS active.\n• Disables background UI refresh.'),
+            const Text(
+              '• Reduces sensor usage (shake/impact).\n• Keeps location updates and SOS active.\n• Disables background UI refresh.',
+            ),
           ],
         ),
       ),

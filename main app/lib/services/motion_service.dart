@@ -12,7 +12,11 @@ class MotionService {
   final void Function()? onShakePanic;
   final void Function()? onImpactDetected;
 
-  MotionService({this.sensitivity = 1.5, this.onShakePanic, this.onImpactDetected});
+  MotionService({
+    this.sensitivity = 1.5,
+    this.onShakePanic,
+    this.onImpactDetected,
+  });
 
   void start() {
     // Shake panic (3 shakes)
@@ -39,4 +43,3 @@ class MotionService {
     _accelSub?.cancel();
   }
 }
-

@@ -22,8 +22,12 @@ class EmergencyMessenger {
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
       }
-      if (enabled && perm != LocationPermission.denied && perm != LocationPermission.deniedForever) {
-        pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      if (enabled &&
+          perm != LocationPermission.denied &&
+          perm != LocationPermission.deniedForever) {
+        pos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
       }
     } catch (_) {}
 
@@ -33,7 +37,7 @@ class EmergencyMessenger {
         .map((c) => PhoneUtils.normalizeIndianNumber(c.phone))
         .where((p) => p.isNotEmpty)
         .toList();
-    
+
     // Notify companion apps
     try {
       if (!announceShare) {
@@ -47,11 +51,14 @@ class EmergencyMessenger {
     } catch (e) {
       print('Error notifying companion apps: $e');
     }
-    
+
     if (recipients.isEmpty) return;
 
     if (Platform.isAndroid) {
-      final sent = await _tryAndroidSmsPlatformChannel(recipients: recipients, message: msg);
+      final sent = await _tryAndroidSmsPlatformChannel(
+        recipients: recipients,
+        message: msg,
+      );
       if (sent) return;
     }
 

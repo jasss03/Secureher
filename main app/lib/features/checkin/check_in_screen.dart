@@ -65,15 +65,26 @@ class _CheckInScreenState extends State<CheckInScreen> {
           children: [
             Text(status, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
-            Row(children: [
-              SizedBox(width: 100, child: TextField(controller: _minutesCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Minutes'))),
-              const SizedBox(width: 12),
-              FilledButton(onPressed: _start, child: const Text('Start')),
-              const SizedBox(width: 8),
-              OutlinedButton(onPressed: _cancel, child: const Text('Cancel')),
-            ]),
+            Row(
+              children: [
+                SizedBox(
+                  width: 100,
+                  child: TextField(
+                    controller: _minutesCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Minutes'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                FilledButton(onPressed: _start, child: const Text('Start')),
+                const SizedBox(width: 8),
+                OutlinedButton(onPressed: _cancel, child: const Text('Cancel')),
+              ],
+            ),
             const SizedBox(height: 24),
-            const Text('If you don\'t check in by the deadline, your trusted contacts will be alerted automatically.'),
+            const Text(
+              'If you don\'t check in by the deadline, your trusted contacts will be alerted automatically.',
+            ),
           ],
         ),
       ),

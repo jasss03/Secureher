@@ -9,7 +9,7 @@ class LocationService {
         developer.log('Location services are disabled');
         return false;
       }
-      
+
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -18,12 +18,12 @@ class LocationService {
           return false;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         developer.log('Location permissions are permanently denied');
         return false;
       }
-      
+
       return true;
     } catch (e) {
       developer.log('Error checking location permission: $e');
@@ -37,7 +37,7 @@ class LocationService {
         developer.log('Location permission not granted');
         return null;
       }
-      
+
       // Use a timeout to prevent hanging
       return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,

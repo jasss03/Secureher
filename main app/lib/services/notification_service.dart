@@ -10,11 +10,22 @@ class NotificationService {
     await _plugin.initialize(settings);
 
     // Request permissions where applicable
-    await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
-    await _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()?.requestPermissions(alert: true, badge: true, sound: true);
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.requestNotificationsPermission();
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
   }
 
-  static Future<void> showImmediate({required String title, required String body}) async {
+  static Future<void> showImmediate({
+    required String title,
+    required String body,
+  }) async {
     const android = AndroidNotificationDetails(
       'secureher_alerts',
       'Alerts',
@@ -28,7 +39,10 @@ class NotificationService {
   }
 
   // Android 12-16 style full-screen incoming call notification
-  static Future<void> showIncomingCallFullScreen({required String caller, String? subtitle}) async {
+  static Future<void> showIncomingCallFullScreen({
+    required String caller,
+    String? subtitle,
+  }) async {
     const android = AndroidNotificationDetails(
       'secureher_calls',
       'Incoming Calls',

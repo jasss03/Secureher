@@ -23,16 +23,24 @@ class _ManageEvidenceScreenState extends State<ManageEvidenceScreen> {
     final dir = await getApplicationDocumentsDirectory();
     final ev = Directory('${dir.path}/evidence');
     if (!await ev.exists()) {
-      setState(() { _files = []; _loading = false; });
+      setState(() {
+        _files = [];
+        _loading = false;
+      });
       return;
     }
     final list = await ev.list().toList();
     list.sort((a, b) => b.path.compareTo(a.path));
-    setState(() { _files = list; _loading = false; });
+    setState(() {
+      _files = list;
+      _loading = false;
+    });
   }
 
   Future<void> _delete(FileSystemEntity f) async {
-    try { await f.delete(); } catch (_) {}
+    try {
+      await f.delete();
+    } catch (_) {}
     await _load();
   }
 
@@ -43,24 +51,24 @@ class _ManageEvidenceScreenState extends State<ManageEvidenceScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _files.isEmpty
-              ? const Center(child: Text('No evidence saved.'))
-              : ListView.separated(
-                  itemCount: _files.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (ctx, i) {
-                    final f = _files[i];
-                    final name = f.path.split('/').last;
-                    final size = (f is File) ? f.lengthSync() : 0;
-                    return ListTile(
-                      title: Text(name),
-                      subtitle: Text('${(size / (1024)).toStringAsFixed(1)} KB'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => _delete(f),
-                      ),
-                    );
-                  },
-                ),
+          ? const Center(child: Text('No evidence saved.'))
+          : ListView.separated(
+              itemCount: _files.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (ctx, i) {
+                final f = _files[i];
+                final name = f.path.split('/').last;
+                final size = (f is File) ? f.lengthSync() : 0;
+                return ListTile(
+                  title: Text(name),
+                  subtitle: Text('${(size / (1024)).toStringAsFixed(1)} KB'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _delete(f),
+                  ),
+                );
+              },
+            ),
     );
   }
 }

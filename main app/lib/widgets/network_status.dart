@@ -5,12 +5,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 class NetworkStatusWidget extends StatefulWidget {
   final Widget child;
   final VoidCallback? onRetry;
-  
-  const NetworkStatusWidget({
-    Key? key, 
-    required this.child,
-    this.onRetry,
-  }) : super(key: key);
+
+  const NetworkStatusWidget({Key? key, required this.child, this.onRetry})
+    : super(key: key);
 
   @override
   State<NetworkStatusWidget> createState() => _NetworkStatusWidgetState();
@@ -24,7 +21,9 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget> {
   void initState() {
     super.initState();
     _checkConnectivity();
-    _subscription = Connectivity().onConnectivityChanged.listen(_updateConnectionStatus);
+    _subscription = Connectivity().onConnectivityChanged.listen(
+      _updateConnectionStatus,
+    );
   }
 
   @override
@@ -57,7 +56,10 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget> {
             child: Material(
               color: Colors.transparent,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 16,
+                ),
                 color: Colors.red.shade700,
                 child: Row(
                   children: [

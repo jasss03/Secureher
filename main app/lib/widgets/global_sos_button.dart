@@ -8,9 +8,9 @@ class GlobalSosButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return FloatingActionButton.extended(
       onPressed: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const _SosQuickSheet()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const _SosQuickSheet()));
       },
       label: const Text('SOS'),
       icon: const Icon(Icons.emergency_rounded),
@@ -36,13 +36,20 @@ class _SosQuickSheet extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Emergency Actions', style: Theme.of(context).textTheme.titleLarge),
+              Text(
+                'Emergency Actions',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: () {
                   Navigator.of(context).pop();
                   // Navigate to full SOS screen
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const _SosScreenShortcut()));
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const _SosScreenShortcut(),
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.radio_button_checked_rounded),
                 label: const Text('One-Tap SOS'),
@@ -90,8 +97,15 @@ class SirenHolder {
   static final SirenHolder instance = SirenHolder._();
   final SirenService _svc = SirenService();
   bool on = false;
-  Future<void> play() async { await _svc.play(); on = true; }
-  Future<void> stop() async { await _svc.stop(); on = false; }
+  Future<void> play() async {
+    await _svc.play();
+    on = true;
+  }
+
+  Future<void> stop() async {
+    await _svc.stop();
+    on = false;
+  }
 }
 
 class _SosScreenShortcut extends StatelessWidget {

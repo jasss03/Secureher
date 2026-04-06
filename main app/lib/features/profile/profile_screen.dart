@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../app.dart';
+import '../../services/companion_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -32,7 +33,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           /// --- USER INFO CARD ---
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             elevation: 2,
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -40,7 +43,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     child: Text(
                       (user?.displayName?.isNotEmpty ?? false)
                           ? user!.displayName!.characters.first.toUpperCase()
@@ -55,9 +60,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Text(
                           user?.displayName ?? 'Your Name',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         Text(
                           user?.phoneNumber ?? user?.email ?? 'No contact info',
@@ -72,7 +76,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onPressed: () async {
                       final newName = await showDialog<String>(
                         context: context,
-                        builder: (_) => _EditNameDialog(current: user?.displayName ?? ''),
+                        builder: (_) =>
+                            _EditNameDialog(current: user?.displayName ?? ''),
                       );
                       if (newName != null && newName.trim().isNotEmpty) {
                         await user?.updateDisplayName(newName.trim());
@@ -114,7 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.pushNamed(context, '/motionSettings');
             },
           ),
-          
+
           ListTile(
             leading: const Icon(Icons.phone_android_rounded),
             title: const Text('Companion App'),
@@ -127,7 +132,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const Divider(height: 32),
 
+          /// --- SAFETY & MONITORING ---
+          Text(
+            'Safety & Monitoring',
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(color: Colors.grey),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.directions_walk_rounded),
+            title: const Text('Travel Alone Mode'),
+            subtitle: const Text(
+              'PASSIVELY monitors audio for distress keywords in the background. If a keyword is detected, SOS triggers automatically.',
+            ),
+            value: acc.travelAloneMode,
+            onChanged: (v) => acc.toggleTravelAlone(v),
+          ),
+
+          const Divider(height: 32),
+
           /// --- ACCESSIBILITY / PREFERENCES ---
+          Text(
+            'Accessibility & Preferences',
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(color: Colors.grey),
+          ),
           SwitchListTile(
             title: const Text('Large text'),
             value: acc.largeText,
@@ -160,7 +190,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             onPressed: () async {
               // Clear local session
@@ -170,7 +202,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 await prefs.remove('idToken');
               } catch (_) {}
               // Sign out Firebase (and Google if needed)
-              try { await FirebaseAuth.instance.signOut(); } catch (_) {}
+              try {
+                await CompanionService().syncDeviceState({'online': false});
+                await FirebaseAuth.instance.signOut();
+              } catch (_) {}
               if (!mounted) return;
               Navigator.pushReplacementNamed(context, '/auth');
             },
@@ -196,11 +231,13 @@ class _EditNameDialogState extends State<_EditNameDialog> {
     super.initState();
     _ctrl = TextEditingController(text: widget.current);
   }
+
   @override
   void dispose() {
     _ctrl.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -210,13 +247,20 @@ class _EditNameDialogState extends State<_EditNameDialog> {
         child: TextFormField(
           controller: _ctrl,
           decoration: const InputDecoration(labelText: 'Full name'),
-          validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter your name' : null,
+          validator: (v) =>
+              (v == null || v.trim().isEmpty) ? 'Enter your name' : null,
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
         FilledButton(
-          onPressed: () { if (_formKey.currentState!.validate()) Navigator.of(context).pop(_ctrl.text.trim()); },
+          onPressed: () {
+            if (_formKey.currentState!.validate())
+              Navigator.of(context).pop(_ctrl.text.trim());
+          },
           child: const Text('Save'),
         ),
       ],

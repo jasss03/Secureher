@@ -13,16 +13,17 @@ class WomenEssentialScreen extends StatefulWidget {
   State<WomenEssentialScreen> createState() => _WomenEssentialScreenState();
 }
 
-class _WomenEssentialScreenState extends State<WomenEssentialScreen> with SingleTickerProviderStateMixin {
+class _WomenEssentialScreenState extends State<WomenEssentialScreen>
+    with SingleTickerProviderStateMixin {
   // Animation controller for UI elements
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   // Cycle calculator variables
   DateTime _lastPeriodDate = DateTime.now().subtract(const Duration(days: 28));
   int _cycleLength = 28;
   int _periodLength = 5;
-  
+
   // Text editing controllers for form fields
   TextEditingController _lastPeriodController = TextEditingController();
   TextEditingController _cycleLengthController = TextEditingController();
@@ -31,22 +32,24 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize animation controller
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    
+
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeIn,
     );
-    
+
     _animationController.forward();
-    
+
     // Initialize text controllers with default values
-    _lastPeriodController.text = DateFormat('yyyy-MM-dd').format(_lastPeriodDate);
+    _lastPeriodController.text = DateFormat(
+      'yyyy-MM-dd',
+    ).format(_lastPeriodDate);
     _cycleLengthController.text = _cycleLength.toString();
     _periodLengthController.text = _periodLength.toString();
   }
@@ -107,7 +110,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
         );
       },
     );
-    
+
     if (picked != null && picked != _lastPeriodDate) {
       setState(() {
         _lastPeriodDate = picked;
@@ -117,12 +120,15 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
   }
 
   /// Build product category card
-  Widget _buildProductCategoryCard(String title, String subtitle, IconData icon, Color color) {
+  Widget _buildProductCategoryCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -130,21 +136,14 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              color.withOpacity(0.8),
-              color,
-            ],
+            colors: [color.withOpacity(0.8), color],
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: Colors.white,
-            ),
+            Icon(icon, size: 32, color: Colors.white),
             const SizedBox(height: 16),
             Text(
               title,
@@ -175,20 +174,17 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
     final fertileWindow = _calculateFertileWindow();
     final daysUntil = _daysUntilNextPeriod();
     final currentCycleDay = _getCurrentCycleDay();
-    
+
     // Format dates for display
     final nextPeriodFormatted = DateFormat('MMM d, yyyy').format(nextPeriod);
     final fertileStartFormatted = DateFormat('MMM d').format(fertileWindow[0]);
     final fertileEndFormatted = DateFormat('MMM d').format(fertileWindow[1]);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Women\'s Essentials',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
         ),
         backgroundColor: const Color(0xFFFCE4EC),
         elevation: 0,
@@ -230,16 +226,13 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                     opacity: _fadeAnimation,
                     child: Text(
                       'Everything you need for your well-being',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[700],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
                   ),
                 ],
               ),
             ),
-            
+
             // Menstrual Cycle Tracker Section
             Padding(
               padding: const EdgeInsets.all(16),
@@ -269,7 +262,8 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                           ),
                           const Spacer(),
                           Tooltip(
-                            message: 'Track your cycle to predict your next period and fertile window',
+                            message:
+                                'Track your cycle to predict your next period and fertile window',
                             child: const Icon(
                               Icons.info_outline,
                               color: Colors.grey,
@@ -279,11 +273,11 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                         ],
                       ),
                       const Divider(),
-                      
+
                       // Cycle Progress Indicator
                       _buildCycleProgressIndicator(currentCycleDay),
                       const SizedBox(height: 16),
-                      
+
                       // Cycle Day Information
                       Center(
                         child: Text(
@@ -295,7 +289,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                         ),
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Prediction Cards
                       Row(
                         children: [
@@ -321,7 +315,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                         ],
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Cycle Calculator
                       _buildCycleCalculator(),
                     ],
@@ -329,7 +323,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                 ),
               ),
             ),
-            
+
             // Essential Products Section
             Padding(
               padding: const EdgeInsets.all(16),
@@ -338,13 +332,10 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                 children: [
                   const Text(
                     'Essential Products',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Product Categories Grid
                   GridView.count(
                     shrinkWrap: true,
@@ -439,7 +430,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                 ],
               ),
             ),
-            
+
             // Safety Tools Section
             Padding(
               padding: const EdgeInsets.all(16),
@@ -448,13 +439,10 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                 children: [
                   const Text(
                     'Safety Tools',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Safety Tools List
                   Card(
                     elevation: 2,
@@ -495,7 +483,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                 ],
               ),
             ),
-            
+
             // Branding
             Padding(
               padding: const EdgeInsets.all(16),
@@ -542,7 +530,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
           ),
         ),
         const SizedBox(height: 16),
-        
+
         // Last Period Date Input
         Row(
           children: [
@@ -568,7 +556,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
           ],
         ),
         const SizedBox(height: 16),
-        
+
         // Cycle Length and Period Length Inputs
         Row(
           children: [
@@ -585,7 +573,8 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                   ),
                   helperText: 'Usually 21-35 days',
                   suffixIcon: Tooltip(
-                    message: 'The number of days from the first day of your period to the day before your next period',
+                    message:
+                        'The number of days from the first day of your period to the day before your next period',
                     child: const Icon(
                       Icons.info_outline,
                       color: Color(0xFFE91E63),
@@ -602,7 +591,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
               ),
             ),
             const SizedBox(width: 16),
-            
+
             // Period Length Input
             Expanded(
               child: TextFormField(
@@ -634,9 +623,9 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
             ),
           ],
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Calculate Button
         SizedBox(
           width: double.infinity,
@@ -644,7 +633,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
             onPressed: () {
               // Recalculate and refresh UI
               setState(() {});
-              
+
               // Show confirmation
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -662,10 +651,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
             ),
             child: const Text(
               'Update Cycle Information',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -679,33 +665,27 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
     final int cycleLength = 28; // Fixed value
     final int periodLength = 5; // Fixed value
     final progress = currentCycleDay / cycleLength;
-    
+
     return Column(
       children: [
         const SizedBox(height: 8),
-        
+
         // Progress Text
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               'Day 1',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
             Text(
               'Day $cycleLength',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
         ),
         const SizedBox(height: 4),
-        
+
         // Progress Bar
         Stack(
           children: [
@@ -717,7 +697,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            
+
             // Progress Indicator
             FractionallySizedBox(
               widthFactor: progress,
@@ -731,7 +711,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                 ),
               ),
             ),
-            
+
             // Current Day Marker
             Positioned(
               left: (progress * MediaQuery.of(context).size.width - 64) - 8,
@@ -743,14 +723,11 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFFE91E63),
-                    width: 3,
-                  ),
+                  border: Border.all(color: const Color(0xFFE91E63), width: 3),
                 ),
               ),
             ),
-            
+
             // Period Phase Indicator (if in period)
             if (currentCycleDay <= periodLength)
               Positioned(
@@ -769,7 +746,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                   ),
                 ),
               ),
-            
+
             // Fertile Window Indicator
             Positioned(
               left: 0,
@@ -793,9 +770,9 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
             ),
           ],
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         // Legend
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -804,7 +781,11 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
             const SizedBox(width: 16),
             _buildLegendItem('Fertile Window', const Color(0xFF9C27B0)),
             const SizedBox(width: 16),
-            _buildLegendItem('Current Day', Colors.white, borderColor: const Color(0xFFE91E63)),
+            _buildLegendItem(
+              'Current Day',
+              Colors.white,
+              borderColor: const Color(0xFFE91E63),
+            ),
           ],
         ),
       ],
@@ -821,28 +802,28 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
-            border: borderColor != null ? Border.all(color: borderColor, width: 2) : null,
+            border: borderColor != null
+                ? Border.all(color: borderColor, width: 2)
+                : null,
           ),
         ),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       ],
     );
   }
 
   /// Build prediction card for cycle information
-  Widget _buildCyclePredictionCard(String title, String date, String subtitle, IconData icon, Color color) {
+  Widget _buildCyclePredictionCard(
+    String title,
+    String date,
+    String subtitle,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -850,11 +831,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
           children: [
             Row(
               children: [
-                Icon(
-                  icon,
-                  size: 16,
-                  color: color,
-                ),
+                Icon(icon, size: 16, color: color),
                 const SizedBox(width: 4),
                 Text(
                   title,
@@ -869,18 +846,12 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
             const SizedBox(height: 8),
             Text(
               date,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -901,11 +872,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
               color: const Color(0xFFFCE4EC),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFFE91E63),
-              size: 24,
-            ),
+            child: Icon(icon, color: const Color(0xFFE91E63), size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -921,10 +888,7 @@ class _WomenEssentialScreenState extends State<WomenEssentialScreen> with Single
                 ),
                 Text(
                   description, // Using the parameter directly
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),

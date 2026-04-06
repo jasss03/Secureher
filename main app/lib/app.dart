@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AccessibilityModel extends ChangeNotifier {
   // Large text scale toggle
@@ -10,25 +11,58 @@ class AccessibilityModel extends ChangeNotifier {
   bool voiceGuidance = false;
   // Accessory toggle
   bool? accessoryEnabled = false;
+  // Travel Alone Mode toggle
+  bool travelAloneMode = false;
 
-  void toggleLargeText(bool v) {
+  AccessibilityModel() {
+    _loadPrefs();
+  }
+
+  Future<void> _loadPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      largeText = prefs.getBool('largeText') ?? true;
+      highContrast = prefs.getBool('highContrast') ?? false;
+      voiceGuidance = prefs.getBool('voiceGuidance') ?? false;
+      accessoryEnabled = prefs.getBool('accessoryEnabled') ?? false;
+      travelAloneMode = prefs.getBool('travelAloneMode') ?? false;
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  Future<void> toggleLargeText(bool v) async {
     largeText = v;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('largeText', v);
   }
 
-  void toggleHighContrast(bool v) {
+  Future<void> toggleHighContrast(bool v) async {
     highContrast = v;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('highContrast', v);
   }
 
-  void toggleVoiceGuidance(bool v) {
+  Future<void> toggleVoiceGuidance(bool v) async {
     voiceGuidance = v;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('voiceGuidance', v);
   }
-  
-  void toggleAccessory(bool v) {
+
+  Future<void> toggleAccessory(bool v) async {
     accessoryEnabled = v;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('accessoryEnabled', v);
+  }
+
+  Future<void> toggleTravelAlone(bool v) async {
+    travelAloneMode = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('travelAloneMode', v);
   }
 }
 
@@ -65,14 +99,18 @@ class AppTheme {
       textTheme: textTheme,
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
@@ -80,7 +118,9 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
         filled: true,
-        fillColor: highContrast ? const Color(0xFFF5F5F5) : const Color(0xFFF8F7FF),
+        fillColor: highContrast
+            ? const Color(0xFFF5F5F5)
+            : const Color(0xFFF8F7FF),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: accent,

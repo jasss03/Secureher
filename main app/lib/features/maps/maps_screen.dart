@@ -22,7 +22,7 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
   bool _showHospitals = true;
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
-  
+
   // API key for Google Places API
   final String _apiKey = 'YOUR_API_KEY'; // Replace with your actual API key
 
@@ -52,9 +52,9 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
 
   Future<void> _getCurrentLocation() async {
     if (!mounted) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       developer.log('Getting current location');
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -89,7 +89,9 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
         if (mounted) {
           setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permission permanently denied')),
+            const SnackBar(
+              content: Text('Location permission permanently denied'),
+            ),
           );
         }
         return;
@@ -99,11 +101,13 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 10),
       );
-      
-      developer.log('Got position: ${position.latitude}, ${position.longitude}');
-      
+
+      developer.log(
+        'Got position: ${position.latitude}, ${position.longitude}',
+      );
+
       if (!mounted) return;
-      
+
       setState(() {
         _currentPosition = position;
         _isLoading = false;
@@ -125,16 +129,16 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
       developer.log('Error getting location: $e');
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error getting location: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error getting location: $e')));
       }
     }
   }
 
   void _addMarker(Position position) {
     if (!mounted) return;
-    
+
     setState(() {
       _markers.clear();
       _markers.add(
@@ -142,44 +146,51 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
           markerId: const MarkerId('currentLocation'),
           position: LatLng(position.latitude, position.longitude),
           infoWindow: const InfoWindow(title: 'Current Location'),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueAzure,
+          ),
         ),
       );
     });
-    
+
     // Fetch nearby places
     if (_showPoliceStations) {
       _fetchNearbyPlaces(position, 'police', BitmapDescriptor.hueBlue);
     }
-    
+
     if (_showHospitals) {
       _fetchNearbyPlaces(position, 'hospital', BitmapDescriptor.hueRed);
     }
   }
-  
-  Future<void> _fetchNearbyPlaces(Position position, String placeType, double markerHue) async {
+
+  Future<void> _fetchNearbyPlaces(
+    Position position,
+    String placeType,
+    double markerHue,
+  ) async {
     try {
-      final url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
+      final url =
+          'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
           '?location=${position.latitude},${position.longitude}'
           '&radius=5000'
           '&type=$placeType'
           '&key=$_apiKey';
-          
+
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         if (data['status'] == 'OK') {
           final places = data['results'] as List;
-          
+
           setState(() {
             for (var i = 0; i < places.length; i++) {
               final place = places[i];
               final lat = place['geometry']['location']['lat'];
               final lng = place['geometry']['location']['lng'];
               final name = place['name'];
-              
+
               _markers.add(
                 Marker(
                   markerId: MarkerId('${placeType}_$i'),
@@ -194,62 +205,68 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
           developer.log('Error fetching nearby $placeType: ${data['status']}');
         }
       } else {
-        developer.log('Error fetching nearby $placeType: ${response.statusCode}');
+        developer.log(
+          'Error fetching nearby $placeType: ${response.statusCode}',
+        );
       }
     } catch (e) {
       developer.log('Error fetching nearby $placeType: $e');
     }
   }
-  
-  Future<void> _searchPlaces(String query, String placeType, double markerHue) async {
+
+  Future<void> _searchPlaces(
+    String query,
+    String placeType,
+    double markerHue,
+  ) async {
     if (query.isEmpty || _currentPosition == null) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
-      final url = 'https://maps.googleapis.com/maps/api/place/textsearch/json'
+      final url =
+          'https://maps.googleapis.com/maps/api/place/textsearch/json'
           '?query=$query ${placeType == 'police' ? 'police station' : 'hospital'}'
           '&location=${_currentPosition!.latitude},${_currentPosition!.longitude}'
           '&radius=10000'
           '&key=$_apiKey';
-          
+
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         if (data['status'] == 'OK') {
           final places = data['results'] as List;
-          
+
           // Clear existing markers of this type
           setState(() {
-            _markers.removeWhere((marker) => 
-              marker.markerId.value.startsWith(placeType) || 
-              marker.markerId.value.startsWith('search_'));
-            
+            _markers.removeWhere(
+              (marker) =>
+                  marker.markerId.value.startsWith(placeType) ||
+                  marker.markerId.value.startsWith('search_'),
+            );
+
             for (var i = 0; i < places.length; i++) {
               final place = places[i];
               final lat = place['geometry']['location']['lat'];
               final lng = place['geometry']['location']['lng'];
               final name = place['name'];
-              
+
               final marker = Marker(
                 markerId: MarkerId('search_${placeType}_$i'),
                 position: LatLng(lat, lng),
                 infoWindow: InfoWindow(title: name),
                 icon: BitmapDescriptor.defaultMarkerWithHue(markerHue),
               );
-              
+
               _markers.add(marker);
-              
+
               // Center map on first result
               if (i == 0 && _mapController != null) {
                 _mapController!.animateCamera(
                   CameraUpdate.newCameraPosition(
-                    CameraPosition(
-                      target: LatLng(lat, lng),
-                      zoom: 15,
-                    ),
+                    CameraPosition(target: LatLng(lat, lng), zoom: 15),
                   ),
                 );
               }
@@ -277,7 +294,7 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     // Default position (San Francisco)
     const LatLng defaultPosition = LatLng(37.7749, -122.4194);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Safety Map'),
@@ -295,7 +312,7 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
                 } else if (value == 'hospital') {
                   _showHospitals = !_showHospitals;
                 }
-                
+
                 if (_currentPosition != null) {
                   _addMarker(_currentPosition!);
                 }
@@ -321,7 +338,10 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
           GoogleMap(
             initialCameraPosition: CameraPosition(
               target: _currentPosition != null
-                  ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
+                  ? LatLng(
+                      _currentPosition!.latitude,
+                      _currentPosition!.longitude,
+                    )
                   : defaultPosition,
               zoom: 15,
             ),
@@ -334,7 +354,7 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
                 _mapController = controller;
                 _mapInitialized = true;
               });
-              
+
               // Refresh map when created
               if (_currentPosition != null) {
                 Future.delayed(const Duration(milliseconds: 300), () {
@@ -342,7 +362,10 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
                     _mapController!.animateCamera(
                       CameraUpdate.newCameraPosition(
                         CameraPosition(
-                          target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                          target: LatLng(
+                            _currentPosition!.latitude,
+                            _currentPosition!.longitude,
+                          ),
                           zoom: 15,
                         ),
                       ),
@@ -359,9 +382,14 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
             right: 16,
             child: Card(
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -375,12 +403,24 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
                         onSubmitted: (value) {
                           if (value.isNotEmpty) {
                             if (_showPoliceStations) {
-                              _searchPlaces(value, 'police', BitmapDescriptor.hueBlue);
+                              _searchPlaces(
+                                value,
+                                'police',
+                                BitmapDescriptor.hueBlue,
+                              );
                             } else if (_showHospitals) {
-                              _searchPlaces(value, 'hospital', BitmapDescriptor.hueRed);
+                              _searchPlaces(
+                                value,
+                                'hospital',
+                                BitmapDescriptor.hueRed,
+                              );
                             } else {
                               // If neither is selected, default to police
-                              _searchPlaces(value, 'police', BitmapDescriptor.hueBlue);
+                              _searchPlaces(
+                                value,
+                                'police',
+                                BitmapDescriptor.hueBlue,
+                              );
                             }
                           }
                         },
@@ -392,12 +432,24 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
                         final value = _searchController.text;
                         if (value.isNotEmpty) {
                           if (_showPoliceStations) {
-                            _searchPlaces(value, 'police', BitmapDescriptor.hueBlue);
+                            _searchPlaces(
+                              value,
+                              'police',
+                              BitmapDescriptor.hueBlue,
+                            );
                           } else if (_showHospitals) {
-                            _searchPlaces(value, 'hospital', BitmapDescriptor.hueRed);
+                            _searchPlaces(
+                              value,
+                              'hospital',
+                              BitmapDescriptor.hueRed,
+                            );
                           } else {
                             // If neither is selected, default to police
-                            _searchPlaces(value, 'police', BitmapDescriptor.hueBlue);
+                            _searchPlaces(
+                              value,
+                              'police',
+                              BitmapDescriptor.hueBlue,
+                            );
                           }
                         }
                       },
@@ -409,13 +461,23 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
                         final searchText = _searchController.text;
                         if (searchText.isNotEmpty) {
                           if (value == 'police') {
-                            _searchPlaces(searchText, 'police', BitmapDescriptor.hueBlue);
+                            _searchPlaces(
+                              searchText,
+                              'police',
+                              BitmapDescriptor.hueBlue,
+                            );
                           } else if (value == 'hospital') {
-                            _searchPlaces(searchText, 'hospital', BitmapDescriptor.hueRed);
+                            _searchPlaces(
+                              searchText,
+                              'hospital',
+                              BitmapDescriptor.hueRed,
+                            );
                           }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Please enter a search term')),
+                            const SnackBar(
+                              content: Text('Please enter a search term'),
+                            ),
                           );
                         }
                       },
@@ -438,9 +500,7 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
           if (_isLoading)
             Container(
               color: Colors.black.withOpacity(0.3),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: const Center(child: CircularProgressIndicator()),
             ),
           // Legend for map markers
           Positioned(
@@ -464,7 +524,11 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: Colors.blue[700], size: 20),
+                      Icon(
+                        Icons.location_on,
+                        color: Colors.blue[700],
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       const Text('Your Location'),
                     ],
@@ -495,15 +559,15 @@ class _MapsScreenState extends State<MapsScreen> with WidgetsBindingObserver {
         onPressed: () {
           if (_mapController != null) {
             final target = _currentPosition != null
-                ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
+                ? LatLng(
+                    _currentPosition!.latitude,
+                    _currentPosition!.longitude,
+                  )
                 : defaultPosition;
-                
+
             _mapController!.animateCamera(
               CameraUpdate.newCameraPosition(
-                CameraPosition(
-                  target: target,
-                  zoom: 15,
-                ),
+                CameraPosition(target: target, zoom: 15),
               ),
             );
           }

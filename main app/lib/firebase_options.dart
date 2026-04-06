@@ -44,7 +44,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyC2vX5IA9MJVoHfucpbSu3pXoNGoNvIcy4',
+    apiKey: 'AIzaSyAH4ioId-gjIZXkDU3aNmaDjeDclwXY9p8',
     appId: '1:346182049858:web:aeab975472fe73dd380ddb',
     messagingSenderId: '346182049858',
     projectId: 'her-b03d7',
@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC0o8OLA5IUsRWD9OtjndLgKHtzVH1ns-w',
+    apiKey: 'AIzaSyAH4ioId-gjIZXkDU3aNmaDjeDclwXY9p8',
     appId: '1:346182049858:android:5d2d0745e6fb0793380ddb',
     messagingSenderId: '346182049858',
     projectId: 'her-b03d7',
@@ -62,25 +62,28 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAQZxD9dJ_wFngIkcnDsamPRgjzaEmb8Ek',
+    apiKey: 'AIzaSyAH4ioId-gjIZXkDU3aNmaDjeDclwXY9p8',
     appId: '1:346182049858:ios:061220caaf35f882380ddb',
     messagingSenderId: '346182049858',
     projectId: 'her-b03d7',
     storageBucket: 'her-b03d7.firebasestorage.app',
-    androidClientId: '346182049858-8nd2i9a832inhpsue88sict8pv4tup5m.apps.googleusercontent.com',
-    iosClientId: '346182049858-0s4qte377d40o4ga16f27m4jel3vrnrq.apps.googleusercontent.com',
+    androidClientId:
+        '346182049858-8nd2i9a832inhpsue88sict8pv4tup5m.apps.googleusercontent.com',
+    iosClientId:
+        '346182049858-0s4qte377d40o4ga16f27m4jel3vrnrq.apps.googleusercontent.com',
     iosBundleId: 'com.secureher.secureher',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAQZxD9dJ_wFngIkcnDsamPRgjzaEmb8Ek',
+    apiKey: 'AIzaSyAH4ioId-gjIZXkDU3aNmaDjeDclwXY9p8',
     appId: '1:346182049858:ios:061220caaf35f882380ddb',
     messagingSenderId: '346182049858',
     projectId: 'her-b03d7',
     storageBucket: 'her-b03d7.firebasestorage.app',
-    androidClientId: '346182049858-8nd2i9a832inhpsue88sict8pv4tup5m.apps.googleusercontent.com',
-    iosClientId: '346182049858-0s4qte377d40o4ga16f27m4jel3vrnrq.apps.googleusercontent.com',
+    androidClientId:
+        '346182049858-8nd2i9a832inhpsue88sict8pv4tup5m.apps.googleusercontent.com',
+    iosClientId:
+        '346182049858-0s4qte377d40o4ga16f27m4jel3vrnrq.apps.googleusercontent.com',
     iosBundleId: 'com.secureher.secureher',
   );
-
 }

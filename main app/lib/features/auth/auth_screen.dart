@@ -12,7 +12,8 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateMixin {
+class _AuthScreenState extends State<AuthScreen>
+    with SingleTickerProviderStateMixin {
   bool isLogin = true;
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
@@ -71,7 +72,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             } catch (_) {}
 
             if (!mounted) return;
-            Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil('/home', (route) => false);
           } on FirebaseAuthException catch (e) {
             String msg;
             switch (e.code) {
@@ -82,14 +85,19 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 msg = 'Incorrect password. Please try again.';
                 break;
               case 'no-app':
-                msg = 'App is not connected to Firebase. Please configure Firebase to enable login.';
+                msg =
+                    'App is not connected to Firebase. Please configure Firebase to enable login.';
                 break;
               default:
                 msg = e.message ?? 'Login failed';
             }
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(msg)));
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login failed: $e')));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
           }
         } else if (_phone.text.trim().isNotEmpty) {
           // Check if user exists with this phone number before allowing OTP login
@@ -97,35 +105,42 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             // Show a message that they need to create an account first
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Please create an account first before logging in with OTP'),
+                content: Text(
+                  'Please create an account first before logging in with OTP',
+                ),
               ),
             );
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error: $e')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Error: $e')));
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Enter email and password to login')),
+            const SnackBar(content: Text('Enter email and password to login')),
           );
         }
       } else {
         // Sign Up mode
         if (_name.text.trim().isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Full Name is required to create an account')));
+            const SnackBar(
+              content: Text('Full Name is required to create an account'),
+            ),
+          );
         } else if (_phone.text.trim().isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Mobile number is required to create an account')));
+            const SnackBar(
+              content: Text('Mobile number is required to create an account'),
+            ),
+          );
         } else {
           try {
             // Create account with email if provided, otherwise use a placeholder
-            final email = _email.text.trim().isNotEmpty 
-                ? _email.text.trim() 
+            final email = _email.text.trim().isNotEmpty
+                ? _email.text.trim()
                 : '${_phone.text.trim().replaceAll('+', '').replaceAll(' ', '')}@secureher.app';
-                
+
             await auth.signUpWithEmail(
               email: email,
               password: _password.text,
@@ -140,24 +155,32 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             } catch (_) {}
 
             if (!mounted) return;
-            
+
             // Navigate to OTP verification screen with phone number
-            Navigator.of(context).pushNamed('/otp', arguments: _phone.text.trim());
+            Navigator.of(
+              context,
+            ).pushNamed('/otp', arguments: _phone.text.trim());
           } on FirebaseAuthException catch (e) {
             String msg;
             switch (e.code) {
               case 'email-already-in-use':
-                msg = 'This email is already registered. Please log in instead.';
+                msg =
+                    'This email is already registered. Please log in instead.';
                 break;
               case 'no-app':
-                msg = 'App is not connected to Firebase. Please configure Firebase to enable sign up.';
+                msg =
+                    'App is not connected to Firebase. Please configure Firebase to enable sign up.';
                 break;
               default:
                 msg = e.message ?? 'Sign up failed';
             }
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(msg)));
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Sign up failed: $e')));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Sign up failed: $e')));
           }
         }
       }
@@ -186,7 +209,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       String friendly;
       switch (e.code) {
         case 'no-app':
-          friendly = 'Google sign-in isn\'t configured. Add GoogleService-Info.plist and URL schemes in Info.plist.';
+          friendly =
+              'Google sign-in isn\'t configured. Add GoogleService-Info.plist and URL schemes in Info.plist.';
           break;
         case 'ERROR_ABORTED_BY_USER':
           friendly = 'Sign in cancelled.';
@@ -195,15 +219,15 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           friendly = e.message ?? 'Google sign-in failed.';
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(friendly)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(friendly)));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Google sign-in failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Google sign-in failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -223,7 +247,10 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 480),
                 child: GlassCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -243,13 +270,21 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                         ),
                       const Align(
                         alignment: Alignment.center,
-                        child: Icon(Icons.shield_rounded, size: 40, color: Color(0xFF7B61FF)),
+                        child: Icon(
+                          Icons.shield_rounded,
+                          size: 40,
+                          color: Color(0xFF7B61FF),
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        isLogin ? 'Welcome to Your\nSafe Space' : 'Create Your\nSafe Space',
+                        isLogin
+                            ? 'Welcome to Your\nSafe Space'
+                            : 'Create Your\nSafe Space',
                         textAlign: TextAlign.center,
-                        style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       SegmentedPills(
@@ -270,31 +305,38 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 textInputAction: TextInputAction.next,
                                 label: 'Full Name *',
                                 validator: (v) =>
-                                (v == null || v.trim().isEmpty) ? 'Name is required' : null,
+                                    (v == null || v.trim().isEmpty)
+                                    ? 'Name is required'
+                                    : null,
                               ),
                               const SizedBox(height: 12),
                             ],
                             PillTextField(
-                                controller: _phone,
-                                keyboardType: TextInputType.phone,
-                                textInputAction: TextInputAction.next,
-                                label: 'Phone Number *',
-                                validator: (v) => 
-                                !isLogin && (v == null || v.isEmpty) ? 'Phone number is required' : null,
-                              ),
+                              controller: _phone,
+                              keyboardType: TextInputType.phone,
+                              textInputAction: TextInputAction.next,
+                              label: 'Phone Number *',
+                              validator: (v) =>
+                                  !isLogin && (v == null || v.isEmpty)
+                                  ? 'Phone number is required'
+                                  : null,
+                            ),
                             const SizedBox(height: 12),
                             PillTextField(
                               controller: _email,
                               textInputAction: TextInputAction.next,
-                              label: isLogin ? 'Email Address (optional)' : 'Email Address',
+                              label: isLogin
+                                  ? 'Email Address (optional)'
+                                  : 'Email Address',
                             ),
                             const SizedBox(height: 12),
                             PillTextField(
                               controller: _password,
                               obscure: true,
                               label: 'Password / PIN',
-                              validator: (v) =>
-                              (v == null || v.isEmpty) ? 'Enter a password or PIN' : null,
+                              validator: (v) => (v == null || v.isEmpty)
+                                  ? 'Enter a password or PIN'
+                                  : null,
                             ),
                             if (!isLogin) ...[
                               const SizedBox(height: 12),
@@ -302,8 +344,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 controller: TextEditingController(),
                                 obscure: true,
                                 label: 'Confirm Password',
-                                validator: (v) =>
-                                (v == null || v.isEmpty) ? 'Re-enter password' : null,
+                                validator: (v) => (v == null || v.isEmpty)
+                                    ? 'Re-enter password'
+                                    : null,
                               ),
                             ],
                             const SizedBox(height: 12),
@@ -311,7 +354,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                               contentPadding: EdgeInsets.zero,
                               value: _biometric,
                               onChanged: (v) => setState(() => _biometric = v),
-                              title: const Text('Enable biometric login (FaceID/TouchID)'),
+                              title: const Text(
+                                'Enable biometric login (FaceID/TouchID)',
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Row(
@@ -321,18 +366,23 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                     onPressed: _loading
                                         ? null
                                         : () {
-                                      if ((_phone.text.trim()).isEmpty) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                              content: Text('Enter your phone number first')),
-                                        );
-                                        return;
-                                      }
-                                      Navigator.of(context).pushNamed(
-                                        '/otp',
-                                        arguments: _phone.text.trim(),
-                                      );
-                                    },
+                                            if ((_phone.text.trim()).isEmpty) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Enter your phone number first',
+                                                  ),
+                                                ),
+                                              );
+                                              return;
+                                            }
+                                            Navigator.of(context).pushNamed(
+                                              '/otp',
+                                              arguments: _phone.text.trim(),
+                                            );
+                                          },
                                     icon: const Icon(Icons.sms_rounded),
                                     label: const Text('Use OTP'),
                                   ),
@@ -354,7 +404,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                               children: [
                                 Expanded(
                                   child: OutlinedButton.icon(
-                                    onPressed: _loading ? null : _signInWithGoogle,
+                                    onPressed: _loading
+                                        ? null
+                                        : _signInWithGoogle,
                                     icon: const Icon(Icons.g_translate_rounded),
                                     label: const Text('Continue with Google'),
                                   ),
@@ -368,7 +420,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 children: const [
                                   Icon(Icons.privacy_tip_rounded, size: 16),
                                   SizedBox(width: 6),
-                                  Text('Your data is encrypted and only shared during SOS.'),
+                                  Text(
+                                    'Your data is encrypted and only shared during SOS.',
+                                  ),
                                 ],
                               ),
                             ),

@@ -27,12 +27,15 @@ dependencies:
   camera: ^0.11.0+2
   audioplayers: ^6.0.0
   flutter_ringtone_player: ^4.0.0+2
+  perfect_volume_control: ^1.0.6
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   encrypt: ^5.0.3
   firebase_core: ^4.1.1
   firebase_auth: ^6.1.0
   cloud_firestore: ^6.0.2
+  cloud_functions: ^6.0.2
+  firebase_messaging: ^16.0.3
   firebase_storage: ^13.0.2
   workmanager: ^0.9.0
   flutter_background: ^1.2.0
@@ -43,6 +46,10 @@ dependencies:
   path: ^1.9.0
   connectivity_plus: ^5.0.2
   qr_flutter: ^4.1.0
+  record: ^6.2.0
+  google_generative_ai: ^0.4.0
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:
@@ -61,3 +68,4 @@ flutter:
   assets:
     - assets/sounds/siren.mp3
     - assets/icons/log.png
+

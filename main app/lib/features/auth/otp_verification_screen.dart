@@ -30,11 +30,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   }
 
   Future<void> _start() async {
-    setState(() { _sending = true; _error = null; });
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
     await AuthService().startPhoneVerification(
       phoneNumber: widget.phoneNumber,
-      onCodeSent: (id) => setState(() { _verificationId = id; _sending = false; }),
-      onError: (msg) => setState(() { _error = msg; _sending = false; }),
+      onCodeSent: (id) => setState(() {
+        _verificationId = id;
+        _sending = false;
+      }),
+      onError: (msg) => setState(() {
+        _error = msg;
+        _sending = false;
+      }),
       onVerified: (_) {
         // Auto-verified
         Navigator.of(context).pushNamedAndRemoveUntil('/home', (_) => false);
@@ -45,19 +54,31 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   Future<void> _verify() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_verificationId == null) {
-      setState(() { _error = 'Verification not started yet. Please wait or resend.'; });
+      setState(() {
+        _error = 'Verification not started yet. Please wait or resend.';
+      });
       return;
     }
-    setState(() { _verifying = true; _error = null; });
+    setState(() {
+      _verifying = true;
+      _error = null;
+    });
     try {
-      await AuthService().verifyCode(verificationId: _verificationId!, smsCode: _codeCtrl.text.trim());
+      await AuthService().verifyCode(
+        verificationId: _verificationId!,
+        smsCode: _codeCtrl.text.trim(),
+      );
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil('/home', (_) => false);
       }
     } catch (e) {
-      setState(() { _error = 'Invalid code or verification failed.'; });
+      setState(() {
+        _error = 'Invalid code or verification failed.';
+      });
     } finally {
-      setState(() { _verifying = false; });
+      setState(() {
+        _verifying = false;
+      });
     }
   }
 
@@ -75,12 +96,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text('We sent a code to', style: theme.textTheme.titleMedium),
-                Text(widget.phoneNumber, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                Text(
+                  widget.phoneNumber,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 if (_sending) const LinearProgressIndicator(minHeight: 4),
                 if (_error != null) ...[
                   const SizedBox(height: 12),
-                  Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
+                  Text(
+                    _error!,
+                    style: TextStyle(color: theme.colorScheme.error),
+                  ),
                 ],
                 const SizedBox(height: 16),
                 Form(
@@ -88,9 +117,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   child: TextFormField(
                     controller: _codeCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Enter 6-digit code'),
+                    decoration: const InputDecoration(
+                      labelText: 'Enter 6-digit code',
+                    ),
                     maxLength: 6,
-                    validator: (v) => (v == null || v.length != 6) ? 'Enter the 6-digit code' : null,
+                    validator: (v) => (v == null || v.length != 6)
+                        ? 'Enter the 6-digit code'
+                        : null,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -112,7 +145,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),

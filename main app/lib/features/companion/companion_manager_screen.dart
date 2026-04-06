@@ -64,7 +64,9 @@ class _CompanionManagerScreenState extends State<CompanionManagerScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error generating link code: ${e.toString()}')),
+          SnackBar(
+            content: Text('Error generating link code: ${e.toString()}'),
+          ),
         );
       }
     }
@@ -101,7 +103,9 @@ class _CompanionManagerScreenState extends State<CompanionManagerScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error removing companion: ${e.toString()}')),
+            SnackBar(
+              content: Text('Error removing companion: ${e.toString()}'),
+            ),
           );
         }
       }
@@ -120,10 +124,7 @@ class _CompanionManagerScreenState extends State<CompanionManagerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Companion App'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Companion App'), centerTitle: true),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -186,12 +187,16 @@ class _CompanionManagerScreenState extends State<CompanionManagerScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: _generatingCode ? null : _generateLinkCode,
+                              onPressed: _generatingCode
+                                  ? null
+                                  : _generateLinkCode,
                               child: _generatingCode
                                   ? const SizedBox(
                                       height: 20,
                                       width: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
                                     )
                                   : const Text('Generate Link Code'),
                             ),
@@ -234,17 +239,21 @@ class _CompanionManagerScreenState extends State<CompanionManagerScreen> {
                         final lastActive = companion['lastActive'] != null
                             ? (companion['lastActive'] as Timestamp).toDate()
                             : null;
-                        
+
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
                             leading: const CircleAvatar(
                               child: Icon(Icons.phone_android),
                             ),
-                            title: Text(companion['companionName'] ?? 'Companion App'),
-                            subtitle: Text(lastActive != null
-                                ? 'Last active: ${_formatDate(lastActive)}'
-                                : 'Never active'),
+                            title: Text(
+                              companion['companionName'] ?? 'Companion App',
+                            ),
+                            subtitle: Text(
+                              lastActive != null
+                                  ? 'Last active: ${_formatDate(lastActive)}'
+                                  : 'Never active',
+                            ),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete_outline),
                               onPressed: () => _removeCompanion(

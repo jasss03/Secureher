@@ -54,36 +54,46 @@ class _SafeZonesScreenState extends State<SafeZonesScreen> {
             children: [
               Align(
                 alignment: Alignment.centerRight,
-                child: FilledButton.icon(onPressed: _addZone, icon: const Icon(Icons.add_location_alt_rounded), label: const Text('Add Zone')),
+                child: FilledButton.icon(
+                  onPressed: _addZone,
+                  icon: const Icon(Icons.add_location_alt_rounded),
+                  label: const Text('Add Zone'),
+                ),
               ),
               const SizedBox(height: 12),
               Expanded(
                 child: _loading
                     ? const Center(child: CircularProgressIndicator())
                     : _zones.isEmpty
-                        ? const Center(child: Text('No safe zones yet. Add home/office or a custom place.'))
-                        : ListView.separated(
-                            itemCount: _zones.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 8),
-                            itemBuilder: (context, i) {
-                              final z = _zones[i];
-                              return GlassCard(
-                                padding: const EdgeInsets.all(16),
-                                child: ListTile(
-                                  leading: const Icon(Icons.shield_rounded),
-                                  title: Text(z.name),
-                                  subtitle: Text('Lat: ${z.lat.toStringAsFixed(5)}, Lng: ${z.lng.toStringAsFixed(5)} • R ${z.radiusMeters.toStringAsFixed(0)}m'),
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.delete_outline_rounded),
-                                    onPressed: () async {
-                                      await _svc.removeZone(z.id);
-                                      await _load();
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                    ? const Center(
+                        child: Text(
+                          'No safe zones yet. Add home/office or a custom place.',
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: _zones.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (context, i) {
+                          final z = _zones[i];
+                          return GlassCard(
+                            padding: const EdgeInsets.all(16),
+                            child: ListTile(
+                              leading: const Icon(Icons.shield_rounded),
+                              title: Text(z.name),
+                              subtitle: Text(
+                                'Lat: ${z.lat.toStringAsFixed(5)}, Lng: ${z.lng.toStringAsFixed(5)} • R ${z.radiusMeters.toStringAsFixed(0)}m',
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded),
+                                onPressed: () async {
+                                  await _svc.removeZone(z.id);
+                                  await _load();
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
               ),
             ],
           ),
@@ -110,8 +120,12 @@ class _AddZoneDialogState extends State<_AddZoneDialog> {
   @override
   void initState() {
     super.initState();
-    _lat = TextEditingController(text: widget.current?.latitude.toStringAsFixed(6) ?? '0.0');
-    _lng = TextEditingController(text: widget.current?.longitude.toStringAsFixed(6) ?? '0.0');
+    _lat = TextEditingController(
+      text: widget.current?.latitude.toStringAsFixed(6) ?? '0.0',
+    );
+    _lng = TextEditingController(
+      text: widget.current?.longitude.toStringAsFixed(6) ?? '0.0',
+    );
   }
 
   @override
@@ -125,19 +139,40 @@ class _AddZoneDialogState extends State<_AddZoneDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextFormField(controller: _name, decoration: const InputDecoration(labelText: 'Name'), validator: (v) => v == null || v.isEmpty ? 'Required' : null),
+              TextFormField(
+                controller: _name,
+                decoration: const InputDecoration(labelText: 'Name'),
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              ),
               const SizedBox(height: 12),
-              TextFormField(controller: _lat, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Latitude'), validator: (v) => v == null || v.isEmpty ? 'Required' : null),
+              TextFormField(
+                controller: _lat,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Latitude'),
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              ),
               const SizedBox(height: 12),
-              TextFormField(controller: _lng, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Longitude'), validator: (v) => v == null || v.isEmpty ? 'Required' : null),
+              TextFormField(
+                controller: _lng,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Longitude'),
+                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              ),
               const SizedBox(height: 12),
-              TextFormField(controller: _radius, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Radius (m)')),
+              TextFormField(
+                controller: _radius,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Radius (m)'),
+              ),
             ],
           ),
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
         FilledButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {

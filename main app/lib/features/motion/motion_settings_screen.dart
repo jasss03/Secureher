@@ -56,7 +56,8 @@ class _MotionSettingsScreenState extends State<MotionSettingsScreen> {
                         children: [
                           Text(
                             'Shake and Impact Detection',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -66,7 +67,8 @@ class _MotionSettingsScreenState extends State<MotionSettingsScreen> {
                           const SizedBox(height: 20),
                           Text(
                             _sensitivityText,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w700),
                           ),
                           const SizedBox(height: 16),
                           Slider(
@@ -80,8 +82,14 @@ class _MotionSettingsScreenState extends State<MotionSettingsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Less Sensitive', style: Theme.of(context).textTheme.bodySmall),
-                              Text('More Sensitive', style: Theme.of(context).textTheme.bodySmall),
+                              Text(
+                                'Less Sensitive',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              Text(
+                                'More Sensitive',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
                             ],
                           ),
                           const SizedBox(height: 16),

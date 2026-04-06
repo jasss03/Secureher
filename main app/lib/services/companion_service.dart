@@ -1,7 +1,13 @@
+import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:geolocator/geolocator.dart';
+import 'contacts_service.dart';
+import 'companion_contract.dart';
 
 class CompanionService {
   static final CompanionService _instance = CompanionService._internal();
@@ -10,170 +16,335 @@ class CompanionService {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
-  // Collection references
-  final String _connectionsCollection = 'companion_connections';
-  
-  // Generate a random 6-digit code for linking
-  String generateLinkCode() {
-    final random = Random();
-    return List.generate(6, (_) => random.nextInt(10)).join();
-  }
-  
-  // Store the link code in Firestore with expiration
-  Future<String> createLinkCode() async {
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _commandSubscription;
+  final Set<String> _processingCommands = <String>{};
+
+  bool get _isReady => Firebase.apps.isNotEmpty && _auth.currentUser != null;
+
+  Future<void> syncCurrentUserProfile() async {
     final user = _auth.currentUser;
-    if (user == null) throw Exception('User not authenticated');
-    
-    final linkCode = generateLinkCode();
-    final expiresAt = DateTime.now().add(const Duration(minutes: 10));
-    
-    await _firestore.collection('companion_link_codes').doc(linkCode).set({
-      'mainAppUserId': user.uid,
-      'createdAt': FieldValue.serverTimestamp(),
-      'expiresAt': Timestamp.fromDate(expiresAt),
-      'used': false,
-    });
-    
-    return linkCode;
+    if (user == null || Firebase.apps.isEmpty) return;
+
+    String? fcmToken;
+    try {
+      fcmToken = await FirebaseMessaging.instance.getToken();
+    } catch (_) {
+      fcmToken = null;
+    }
+
+    await _firestore.collection(CompanionCollections.users).doc(user.uid).set({
+      'role': 'main',
+      'displayName': user.displayName,
+      'email': user.email,
+      'phoneNumber': user.phoneNumber,
+      'platform': Platform.operatingSystem,
+      'lastSeenAt': FieldValue.serverTimestamp(),
+      if (fcmToken != null) 'fcmTokens': FieldValue.arrayUnion([fcmToken]),
+    }, SetOptions(merge: true));
+
+    await _firestore
+        .collection(CompanionCollections.deviceState)
+        .doc(user.uid)
+        .set({
+          'mainUserId': user.uid,
+          'platform': Platform.operatingSystem,
+          'online': true,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
   }
-  
-  // Check if user has any linked companion apps
+
+  Future<String> createLinkCode() async {
+    if (!_isReady) throw Exception('User not authenticated');
+    final user = _auth.currentUser!;
+
+    // Generate a random 6-character alphanumeric code
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final rng = Random.secure();
+    final code = List.generate(6, (_) => chars[rng.nextInt(chars.length)]).join();
+
+    // Write it to Firestore with a 10-minute TTL
+    await _firestore.collection('link_codes').doc(code).set({
+      'mainUserId': user.uid,
+      'createdAt': FieldValue.serverTimestamp(),
+      'expiresAt': Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 10))),
+    });
+
+    return code;
+  }
+
   Future<List<Map<String, dynamic>>> getLinkedCompanions() async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
-    
-    final connections = await _firestore
-        .collection(_connectionsCollection)
-        .where('mainAppUserId', isEqualTo: user.uid)
-        .where('active', isEqualTo: true)
+
+    final links = await _firestore
+        .collection(CompanionCollections.companionLinks)
+        .where('mainUserId', isEqualTo: user.uid)
         .get();
-    
-    return connections.docs.map((doc) => {
-      'id': doc.id,
-      'companionUserId': doc.data()['companionUserId'],
-      'companionName': doc.data()['companionName'] ?? 'Companion App',
-      'lastActive': doc.data()['lastActive'],
-      'fcmToken': doc.data()['companionFcmToken'],
-    }).toList();
+
+    final activeLinks = links.docs.where((doc) {
+      final data = doc.data();
+      return data['active'] == true;
+    }).toList()
+      ..sort((a, b) {
+        final aUpdatedAt = _timestampSortValue(a.data()['updatedAt']);
+        final bUpdatedAt = _timestampSortValue(b.data()['updatedAt']);
+        return bUpdatedAt.compareTo(aUpdatedAt);
+      });
+
+    return activeLinks
+        .map(
+          (doc) => {
+            'id': doc.id,
+            'companionUserId': doc.data()['companionUserId'],
+            'companionName':
+                doc.data()['companionDisplayName'] ??
+                doc.data()['companionEmail'] ??
+                'Companion App',
+            'lastActive': doc.data()['updatedAt'],
+          },
+        )
+        .toList();
   }
-  
-  // Remove a linked companion
+
   Future<void> removeCompanion(String connectionId) async {
     await _firestore
-        .collection(_connectionsCollection)
+        .collection(CompanionCollections.companionLinks)
         .doc(connectionId)
-        .update({'active': false});
+        .set({
+          'active': false,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
   }
-  
-  // Send notification to all linked companions
-  Future<void> notifyCompanions({
-    required String title,
-    required String body,
-    Map<String, dynamic>? data,
+
+  Future<void> syncDeviceState(Map<String, dynamic> patch) async {
+    final user = _auth.currentUser;
+    if (user == null || Firebase.apps.isEmpty) return;
+    await _firestore
+        .collection(CompanionCollections.deviceState)
+        .doc(user.uid)
+        .set({
+          'mainUserId': user.uid,
+          'updatedAt': FieldValue.serverTimestamp(),
+          ...patch,
+        }, SetOptions(merge: true));
+  }
+
+  Future<void> publishCurrentPosition(Position position) async {
+    final user = _auth.currentUser;
+    if (user == null || Firebase.apps.isEmpty) return;
+
+    final payload = {
+      'lat': position.latitude,
+      'lng': position.longitude,
+      'accuracy': position.accuracy,
+      'capturedAt': FieldValue.serverTimestamp(),
+    };
+
+    await _firestore
+        .collection(CompanionCollections.deviceState)
+        .doc(user.uid)
+        .set({
+          'currentLocation': payload,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+    await _firestore
+        .collection(CompanionCollections.deviceLocations)
+        .doc(user.uid)
+        .collection('points')
+        .add(payload);
+  }
+
+  Future<void> createAlert({
+    required String type,
+    required String message,
+    Position? position,
+    bool active = false,
+    Map<String, dynamic>? extra,
   }) async {
     final user = _auth.currentUser;
-    if (user == null) return;
-    
-    final companions = await getLinkedCompanions();
-    if (companions.isEmpty) return;
-    
-    // Create notification document in Firestore to trigger Cloud Function
-    for (final companion in companions) {
-      if (companion['fcmToken'] != null) {
-        await _firestore.collection('notifications').add({
-          'to': companion['fcmToken'],
-          'title': title,
-          'body': body,
-          'data': {
-            'type': 'sos_alert',
-            'mainAppUserId': user.uid,
-            ...?data,
-          },
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-      }
-    }
+    if (user == null || Firebase.apps.isEmpty) return;
+
+    final contacts = await ContactsService().getContacts();
+    await _firestore.collection(CompanionCollections.alerts).add({
+      'type': type,
+      'mainUserId': user.uid,
+      'message': message,
+      'active': active,
+      'createdAt': FieldValue.serverTimestamp(),
+      'currentLocation': position == null
+          ? null
+          : {'lat': position.latitude, 'lng': position.longitude},
+      'recipients': contacts
+          .map(
+            (contact) => {
+              'id': contact.id,
+              'name': contact.name,
+              'phone': contact.phone,
+              'email': contact.email,
+              'relationship': contact.relationship,
+            },
+          )
+          .toList(),
+      ...?extra,
+    });
   }
-  
-  // Send SOS alert to all linked companions
+
   Future<void> sendSosAlert({
     double? latitude,
     double? longitude,
     String? address,
   }) async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-    
-    await notifyCompanions(
-      title: 'SOS ALERT',
-      body: '${user.displayName ?? 'Your friend'} needs help!',
-      data: {
-        'latitude': latitude,
-        'longitude': longitude,
+    await createAlert(
+      type: 'sos',
+      active: true,
+      message: '${_auth.currentUser?.displayName ?? 'Your friend'} needs help!',
+      extra: {
         'address': address,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        if (latitude != null && longitude != null)
+          'currentLocation': {'lat': latitude, 'lng': longitude},
       },
     );
-    
-    // Also store the alert in Firestore for companion app to retrieve
-    await _firestore.collection('sos_alerts').add({
-      'userId': user.uid,
-      'userName': user.displayName,
-      'latitude': latitude,
-      'longitude': longitude,
-      'address': address,
-      'timestamp': FieldValue.serverTimestamp(),
-      'resolved': false,
-    });
   }
-  
-  // Send check-in notification to companions
+
   Future<void> sendCheckInNotification({
     required DateTime scheduledTime,
     required String message,
   }) async {
     final user = _auth.currentUser;
-    if (user == null) return;
-    
-    await notifyCompanions(
-      title: 'New Check-in Scheduled',
-      body: '${user.displayName ?? 'Your friend'} scheduled a check-in',
-      data: {
-        'type': 'check_in',
-        'scheduledTime': scheduledTime.millisecondsSinceEpoch,
+    if (user == null || Firebase.apps.isEmpty) return;
+
+    final checkInId = DateTime.now().microsecondsSinceEpoch.toString();
+    await _firestore
+        .collection(CompanionCollections.checkIns)
+        .doc(user.uid)
+        .collection('items')
+        .doc(checkInId)
+        .set({
+          'kind': 'check_in',
+          'mainUserId': user.uid,
+          'message': message,
+          'scheduledFor': Timestamp.fromDate(scheduledTime),
+          'status': 'pending',
+          'createdBy': 'main_app',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+    await syncDeviceState({
+      'activeCheckIn': {
+        'id': checkInId,
         'message': message,
+        'scheduledFor': Timestamp.fromDate(scheduledTime),
+        'status': 'pending',
       },
-    );
-    
-    // Store check-in in Firestore
-    await _firestore.collection('check_ins').add({
-      'userId': user.uid,
-      'userName': user.displayName,
-      'scheduledTime': Timestamp.fromDate(scheduledTime),
-      'message': message,
-      'completed': false,
-      'createdAt': FieldValue.serverTimestamp(),
     });
   }
-  
-  // Mark a check-in as completed
+
   Future<void> completeCheckIn(String checkInId) async {
-    await _firestore.collection('check_ins').doc(checkInId).update({
-      'completed': true,
-      'completedAt': FieldValue.serverTimestamp(),
-    });
-    
     final user = _auth.currentUser;
-    if (user == null) return;
-    
-    await notifyCompanions(
-      title: 'Check-in Completed',
-      body: '${user.displayName ?? 'Your friend'} has completed their check-in',
-      data: {
-        'type': 'check_in_completed',
-        'checkInId': checkInId,
-      },
-    );
+    if (user == null || Firebase.apps.isEmpty) return;
+
+    await _firestore
+        .collection(CompanionCollections.checkIns)
+        .doc(user.uid)
+        .collection('items')
+        .doc(checkInId)
+        .set({
+          'status': 'completed',
+          'completedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+    await syncDeviceState({'activeCheckIn': null});
   }
+
+  Future<void> startRemoteCommandListener({
+    required Future<String?> Function(String type, Map<String, dynamic> payload)
+    onCommand,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null || Firebase.apps.isEmpty) return;
+
+    await _commandSubscription?.cancel();
+    _commandSubscription = _firestore
+        .collection(CompanionCollections.remoteCommands)
+        .where('mainUserId', isEqualTo: user.uid)
+        .where('status', isEqualTo: 'queued')
+        .orderBy('createdAt')
+        .snapshots()
+        .listen((snapshot) {
+          for (final change in snapshot.docChanges) {
+            if (change.type == DocumentChangeType.added) {
+              _processQueuedCommand(change.doc, onCommand);
+            }
+          }
+        });
+  }
+
+  Future<void> _processQueuedCommand(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+    Future<String?> Function(String type, Map<String, dynamic> payload)
+    onCommand,
+  ) async {
+    if (_processingCommands.contains(doc.id)) return;
+    _processingCommands.add(doc.id);
+    final data = doc.data();
+
+    try {
+      if (data == null) return;
+
+      await doc.reference.set({
+        'status': 'processing',
+        'processingAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      final type = data['type'] as String? ?? '';
+      final payload = Map<String, dynamic>.from(
+        data['payload'] as Map? ?? const {},
+      );
+      final message = await onCommand(type, payload);
+
+      await doc.reference.set({
+        'status': 'success',
+        'ackAt': FieldValue.serverTimestamp(),
+        if (message != null) 'result': message,
+      }, SetOptions(merge: true));
+
+      await syncDeviceState({
+        'lastCommandResult': {
+          'type': type,
+          'status': 'success',
+          'message': message ?? 'Command completed successfully.',
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+      });
+    } catch (e) {
+      await doc.reference.set({
+        'status': 'failed',
+        'ackAt': FieldValue.serverTimestamp(),
+        'error': e.toString(),
+      }, SetOptions(merge: true));
+      await syncDeviceState({
+        'lastCommandResult': {
+          'type': data?['type'],
+          'status': 'failed',
+          'message': e.toString(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+      });
+    } finally {
+      _processingCommands.remove(doc.id);
+    }
+  }
+
+  Future<void> stopRemoteCommandListener() async {
+    await _commandSubscription?.cancel();
+    _commandSubscription = null;
+  }
+}
+
+int _timestampSortValue(dynamic value) {
+  if (value is Timestamp) {
+    return value.millisecondsSinceEpoch;
+  }
+  return 0;
 }

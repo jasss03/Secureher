@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'companion_service.dart';
 
 class AuthService {
   // Lazy access to FirebaseAuth only when Firebase is initialized
@@ -8,7 +9,10 @@ class AuthService {
 
   FirebaseAuth get _auth {
     if (!_isReady) {
-      throw FirebaseAuthException(code: 'no-app', message: 'Firebase is not configured');
+      throw FirebaseAuthException(
+        code: 'no-app',
+        message: 'Firebase is not configured',
+      );
     }
     return FirebaseAuth.instance;
   }
@@ -32,6 +36,7 @@ class AuthService {
   Future<void> signOut() async {
     if (!_isReady) return;
     try {
+      await CompanionService().syncDeviceState({'online': false});
       await _auth.signOut();
     } catch (_) {}
   }
@@ -45,7 +50,9 @@ class AuthService {
     int? forceResendingToken,
   }) async {
     if (!_isReady) {
-      onError('Firebase is not configured. Add GoogleService-Info.plist (iOS) and call Firebase.initializeApp().');
+      onError(
+        'Firebase is not configured. Add GoogleService-Info.plist (iOS) and call Firebase.initializeApp().',
+      );
       return;
     }
     try {
@@ -55,6 +62,7 @@ class AuthService {
         verificationCompleted: (PhoneAuthCredential credential) async {
           try {
             final cred = await _auth.signInWithCredential(credential);
+            await CompanionService().syncCurrentUserProfile();
             if (onVerified != null) onVerified(cred);
           } catch (e) {
             onError('Auto verification failed: $e');
@@ -80,13 +88,18 @@ class AuthService {
     required String smsCode,
   }) async {
     if (!_isReady) {
-      throw FirebaseAuthException(code: 'no-app', message: 'Firebase is not configured');
+      throw FirebaseAuthException(
+        code: 'no-app',
+        message: 'Firebase is not configured',
+      );
     }
     final credential = PhoneAuthProvider.credential(
       verificationId: verificationId,
       smsCode: smsCode,
     );
-    return _auth.signInWithCredential(credential);
+    final result = await _auth.signInWithCredential(credential);
+    await CompanionService().syncCurrentUserProfile();
+    return result;
   }
 
   // Email/password auth
@@ -96,7 +109,10 @@ class AuthService {
     String? displayName,
   }) async {
     if (!_isReady) {
-      throw FirebaseAuthException(code: 'no-app', message: 'Firebase is not configured');
+      throw FirebaseAuthException(
+        code: 'no-app',
+        message: 'Firebase is not configured',
+      );
     }
     final cred = await _auth.createUserWithEmailAndPassword(
       email: email.trim(),
@@ -105,6 +121,7 @@ class AuthService {
     if (displayName != null && displayName.trim().isNotEmpty) {
       await cred.user?.updateDisplayName(displayName.trim());
     }
+    await CompanionService().syncCurrentUserProfile();
     return cred;
   }
 
@@ -113,21 +130,26 @@ class AuthService {
     required String password,
   }) async {
     if (!_isReady) {
-      throw FirebaseAuthException(code: 'no-app', message: 'Firebase is not configured');
+      throw FirebaseAuthException(
+        code: 'no-app',
+        message: 'Firebase is not configured',
+      );
     }
-    
+
     try {
       final credential = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
-      
+
       // Save email for offline access if login successful
       if (credential.user?.email != null) {
         await _saveEmail(credential.user!.email!);
         await handleOfflineAuth(credential.user!.email!);
       }
-      
+
+      await CompanionService().syncCurrentUserProfile();
+
       return credential;
     } catch (e) {
       if (e is FirebaseAuthException && e.code == 'network-request-failed') {
@@ -146,7 +168,7 @@ class AuthService {
       rethrow;
     }
   }
-  
+
   // Handle offline authentication
   Future<bool> handleOfflineAuth(String email) async {
     try {
@@ -158,7 +180,7 @@ class AuthService {
       return false;
     }
   }
-  
+
   // Check if user is authenticated in offline mode
   Future<bool> isOfflineAuthenticated() async {
     try {
@@ -168,7 +190,7 @@ class AuthService {
       return false;
     }
   }
-  
+
   // Get saved email from local storage
   Future<String?> _getSavedEmail() async {
     try {
@@ -178,7 +200,7 @@ class AuthService {
       return null;
     }
   }
-  
+
   // Save email to local storage
   Future<void> _saveEmail(String email) async {
     try {
@@ -208,15 +230,17 @@ class AuthService {
       final googleProvider = GoogleAuthProvider();
       googleProvider.addScope('email');
       googleProvider.setCustomParameters({'prompt': 'select_account'});
-      
+
       final credential = await _auth.signInWithProvider(googleProvider);
-      
+
       // Save email for offline access if login successful
       if (credential.user?.email != null) {
         await _saveEmail(credential.user!.email!);
         await handleOfflineAuth(credential.user!.email!);
       }
-      
+
+      await CompanionService().syncCurrentUserProfile();
+
       return credential;
     } catch (e) {
       if (e is FirebaseAuthException && e.code == 'network-request-failed') {
